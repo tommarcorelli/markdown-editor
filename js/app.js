@@ -40,6 +40,80 @@
   }
 
   editor.addEventListener('input', onEditorInput);
+
+  // ---------- Scroll sync éditeur <-> preview ----------
+  let syncing = false;
+  let rafPending = false;
+
+  function getLineHeight() {
+    const lh = parseFloat(getComputedStyle(editor).lineHeight);
+    return isNaN(lh) ? 24 : lh;
+  }
+
+  function syncPreviewFromEditor() {
+    if (syncing) return;
+    syncing = true;
+
+    const lineHeight = getLineHeight();
+    const currentLine = editor.scrollTop / lineHeight;
+    const anchors = Array.from(preview.querySelectorAll('[data-line]'));
+
+    if (anchors.length) {
+      let match = anchors[0];
+      let next = null;
+      for (const el of anchors) {
+        const line = parseFloat(el.dataset.line);
+        if (line <= currentLine) match = el;
+        else { next = el; break; }
+      }
+      const matchLine = parseFloat(match.dataset.line);
+      const nextLine = next ? parseFloat(next.dataset.line) : matchLine + 1;
+      const span = nextLine - matchLine || 1;
+      const frac = next ? Math.min(1, Math.max(0, (currentLine - matchLine) / span)) : 0;
+      const nextTop = next ? next.offsetTop : match.offsetTop + match.offsetHeight;
+      const targetTop = match.offsetTop + frac * (nextTop - match.offsetTop);
+      preview.scrollTop = targetTop - 12;
+    }
+
+    requestAnimationFrame(() => { syncing = false; });
+  }
+
+  function syncEditorFromPreview() {
+    if (syncing) return;
+    syncing = true;
+
+    const anchors = Array.from(preview.querySelectorAll('[data-line]'));
+    if (anchors.length) {
+      const previewScrollCenter = preview.scrollTop + 12;
+      let match = anchors[0];
+      let next = null;
+      for (const el of anchors) {
+        if (el.offsetTop <= previewScrollCenter) match = el;
+        else { next = el; break; }
+      }
+      const matchLine = parseFloat(match.dataset.line);
+      const nextLine = next ? parseFloat(next.dataset.line) : matchLine + 1;
+      const nextTop = next ? next.offsetTop : match.offsetTop + match.offsetHeight;
+      const span = nextTop - match.offsetTop || 1;
+      const frac = next ? Math.min(1, Math.max(0, (previewScrollCenter - match.offsetTop) / span)) : 0;
+      const targetLine = matchLine + frac * (nextLine - matchLine);
+      editor.scrollTop = targetLine * getLineHeight();
+    }
+
+    requestAnimationFrame(() => { syncing = false; });
+  }
+
+  function throttledRaf(fn) {
+    return () => {
+      if (rafPending) return;
+      rafPending = true;
+      requestAnimationFrame(() => { fn(); rafPending = false; });
+    };
+  }
+
+  editor.addEventListener('scroll', throttledRaf(syncPreviewFromEditor));
+  preview.addEventListener('scroll', throttledRaf(syncEditorFromPreview));
+
   docTitle.addEventListener('change', () => {
     saveToLocalStorage(editor.value, docTitle.value);
   });

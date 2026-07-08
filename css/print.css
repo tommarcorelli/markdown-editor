@@ -1,0 +1,32 @@
+/* print.css — appliquée uniquement lors de l'impression / export PDF */
+@media print {
+  .topbar, .statusbar, .pane-editor, .pane-resizer {
+    display: none !important;
+  }
+  .workspace {
+    display: block !important;
+  }
+  .pane-preview {
+    flex: none !important;
+    overflow: visible !important;
+    background: #fff !important;
+  }
+  #preview {
+    overflow: visible !important;
+    padding: 0 !important;
+    max-width: 100% !important;
+  }
+  .markdown-body {
+    max-width: 100% !important;
+    color: #000 !important;
+  }
+  .markdown-body pre, .markdown-body code {
+    white-space: pre-wrap !important;
+    word-break: break-word;
+  }
+  a { color: inherit !important; text-decoration: underline !important; }
+
+  @page {
+    margin: 2cm 1.8cm;
+  }
+}
