@@ -4,15 +4,11 @@ async function exportAsMarkdown(content, title) {
   downloadBlob(content, `${title || 'document'}.md`, 'text/markdown');
 }
 
-async function exportAsHtml(htmlContent, title, themeName) {
-  // On récupère le CSS du thème actif pour l'inliner (fichier autonome)
-  let themeCss = '';
-  try {
-    const res = await fetch(`css/themes/${themeName}.css`);
-    themeCss = await res.text();
-  } catch (e) {
-    console.warn('Impossible de charger le CSS du thème pour l\'export :', e);
-  }
+function exportAsHtml(htmlContent, title, themeName) {
+  // Le CSS est embarqué en JS (js/theme-styles.js) plutôt que récupéré via
+  // fetch() : fetch() échoue silencieusement quand l'éditeur est ouvert en
+  // file:// (double-clic), ce qui produisait un export sans aucun style.
+  const themeCss = THEME_CSS[themeName] || THEME_CSS.github;
 
   const standalone = `<!DOCTYPE html>
 <html lang="fr">
@@ -20,8 +16,9 @@ async function exportAsHtml(htmlContent, title, themeName) {
 <meta charset="UTF-8">
 <title>${escapeHtmlText(title)}</title>
 <style>
-body { margin: 0; padding: 40px 20px; background: #fff; }
+body { margin: 0; padding: 40px 20px; }
 ${themeCss}
+${HLJS_CSS}
 </style>
 </head>
 <body>

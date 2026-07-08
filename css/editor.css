@@ -279,7 +279,10 @@ body {
   overflow-y: auto;
   padding: 40px 56px;
   font-family: var(--font-serif);
-  color: var(--paper-text);
+  /* La couleur du texte est définie par le thème actif via .markdown-body,
+     pas ici — sinon le sélecteur #preview (ID) écrase le thème
+     (spécificité ID > classe), rendant le texte illisible sur les
+     thèmes sombres. */
 }
 
 /* ---------- STATUSBAR ---------- */
