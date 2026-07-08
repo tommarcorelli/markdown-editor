@@ -1,0 +1,68 @@
+// sw.js — cache-first pour l'app shell, pour un fonctionnement 100% hors-ligne
+const CACHE_NAME = 'md-editor-v1';
+
+const APP_SHELL = [
+  './',
+  './index.html',
+  './manifest.json',
+  './css/editor.css',
+  './css/print.css',
+  './css/vendor/atom-one-dark.min.css',
+  './css/themes/github.css',
+  './css/themes/minimal.css',
+  './css/themes/sepia.css',
+  './css/themes/nuit.css',
+  './css/themes/neobrutalist.css',
+  './css/themes/cyberpunk.css',
+  './js/renderer.js',
+  './js/storage.js',
+  './js/themes.js',
+  './js/theme-styles.js',
+  './js/export.js',
+  './js/editor-cm.js',
+  './js/app.js',
+  './js/vendor/markdown-it.min.js',
+  './js/vendor/purify.min.js',
+  './js/vendor/highlight.min.js',
+  './js/vendor/codemirror.min.js',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
+  './icons/icon-maskable-512.png',
+  './icons/favicon-32.png'
+];
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then((cache) => cache.addAll(APP_SHELL))
+      .then(() => self.skipWaiting())
+  );
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
+    ).then(() => self.clients.claim())
+  );
+});
+
+// Cache-first pour tout ce qui est même origine (app shell) ;
+// on laisse passer normalement les requêtes externes (ex : Google Fonts).
+self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url);
+  if (url.origin !== self.location.origin) return;
+
+  event.respondWith(
+    caches.match(event.request).then((cached) => {
+      if (cached) return cached;
+      return fetch(event.request).then((response) => {
+        if (response.ok) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        }
+        return response;
+      }).catch(() => cached);
+    })
+  );
+});

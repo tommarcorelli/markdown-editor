@@ -259,20 +259,14 @@ body {
 .pane-resizer:hover, .pane-resizer.active { background: var(--accent-dim); }
 .pane-resizer:hover::before, .pane-resizer.active::before { opacity: 0.6; background: var(--ink-bg); }
 
-#editor {
+.editor-mount {
   flex: 1;
-  resize: none;
-  border: none;
-  outline: none;
-  background: var(--ink-bg);
-  color: var(--ink-text);
-  font-family: var(--font-mono);
-  font-size: 14.5px;
-  line-height: 1.7;
-  padding: 28px 32px;
-  tab-size: 2;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
 }
-#editor::placeholder { color: var(--ink-text-dim); }
+.editor-mount .cm-editor { height: 100%; }
+.editor-mount::-webkit-scrollbar { width: 10px; }
 
 #preview {
   flex: 1;
@@ -302,8 +296,8 @@ body {
 #save-status.unsaved { color: var(--accent); }
 
 /* ---------- SCROLLBARS (édition) ---------- */
-#editor::-webkit-scrollbar, #preview::-webkit-scrollbar { width: 10px; }
-#editor::-webkit-scrollbar-thumb { background: var(--ink-border); border-radius: 5px; }
+.editor-mount .cm-scroller::-webkit-scrollbar, #preview::-webkit-scrollbar { width: 10px; }
+.editor-mount .cm-scroller::-webkit-scrollbar-thumb { background: var(--ink-border); border-radius: 5px; }
 #preview::-webkit-scrollbar-thumb { background: #d8d2c0; border-radius: 5px; }
 
 /* ---------- RESPONSIVE ---------- */
@@ -312,5 +306,5 @@ body {
   .doc-title { max-width: 100px; }
   .workspace[data-mode="split"] { flex-direction: column; }
   .workspace[data-mode="split"] .pane-resizer { display: none; }
-  #editor, #preview { padding: 18px; }
+  .editor-mount .cm-content, #preview { padding: 18px; }
 }

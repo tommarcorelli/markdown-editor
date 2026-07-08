@@ -4,11 +4,20 @@ async function exportAsMarkdown(content, title) {
   downloadBlob(content, `${title || 'document'}.md`, 'text/markdown');
 }
 
+function stripSyncAttributes(html) {
+  const container = document.createElement('div');
+  container.innerHTML = html;
+  container.querySelectorAll('[data-line]').forEach(el => el.removeAttribute('data-line'));
+  return container.innerHTML;
+}
+
 function exportAsHtml(htmlContent, title, themeName) {
   // Le CSS est embarqué en JS (js/theme-styles.js) plutôt que récupéré via
   // fetch() : fetch() échoue silencieusement quand l'éditeur est ouvert en
   // file:// (double-clic), ce qui produisait un export sans aucun style.
   const themeCss = THEME_CSS[themeName] || THEME_CSS.github;
+  const bg = THEME_BG[themeName] || '#ffffff';
+  const cleanHtml = stripSyncAttributes(htmlContent);
 
   const standalone = `<!DOCTYPE html>
 <html lang="fr">
@@ -16,14 +25,21 @@ function exportAsHtml(htmlContent, title, themeName) {
 <meta charset="UTF-8">
 <title>${escapeHtmlText(title)}</title>
 <style>
-body { margin: 0; padding: 40px 20px; }
+html { background: ${bg}; }
+body {
+  margin: 0;
+  background: ${bg};
+  padding: 56px 24px;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
 ${themeCss}
 ${HLJS_CSS}
 </style>
 </head>
 <body>
 <div class="markdown-body">
-${htmlContent}
+${cleanHtml}
 </div>
 </body>
 </html>`;

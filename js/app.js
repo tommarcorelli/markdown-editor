@@ -1,6 +1,6 @@
 // app.js — orchestration de l'application
 (function () {
-  const editor = document.getElementById('editor');
+  const editorMount = document.getElementById('editor-mount');
   const preview = document.getElementById('preview');
   const docTitle = document.getElementById('doc-title');
   const wordCount = document.getElementById('word-count');
@@ -12,20 +12,22 @@
   const themeSelect = document.getElementById('theme-select');
 
   let debounceTimer = null;
+  let cmEditor = null; // API retournée par createMarkdownEditor()
 
   // ---------- Rendu live (debounced) ----------
   function renderPreview() {
-    preview.innerHTML = renderMarkdown(editor.value);
+    preview.innerHTML = renderMarkdown(cmEditor.getValue());
   }
 
   function updateStats() {
-    const text = editor.value.trim();
+    const text = cmEditor.getValue().trim();
     const words = text.length ? text.split(/\s+/).length : 0;
+    const raw = cmEditor.getValue();
     wordCount.textContent = `${words} mot${words > 1 ? 's' : ''}`;
-    charCount.textContent = `${editor.value.length} caractères`;
+    charCount.textContent = `${raw.length} caractères`;
   }
 
-  function onEditorInput() {
+  function onEditorChange() {
     saveStatus.textContent = 'Modifications…';
     saveStatus.classList.add('unsaved');
     updateStats();
@@ -33,31 +35,34 @@
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
       renderPreview();
-      saveToLocalStorage(editor.value, docTitle.value);
+      saveToLocalStorage(cmEditor.getValue(), docTitle.value);
       saveStatus.textContent = 'Enregistré';
       saveStatus.classList.remove('unsaved');
     }, 150);
   }
 
-  editor.addEventListener('input', onEditorInput);
+  docTitle.addEventListener('change', () => {
+    saveToLocalStorage(cmEditor.getValue(), docTitle.value);
+  });
 
   // ---------- Scroll sync éditeur <-> preview ----------
+  // S'appuie sur les blocs de ligne réels de CodeMirror (lineBlockAtHeight),
+  // qui tiennent compte du retour à la ligne automatique — plus fiable
+  // qu'un calcul approximatif basé sur une hauteur de ligne fixe.
   let syncing = false;
   let rafPending = false;
-
-  function getLineHeight() {
-    const lh = parseFloat(getComputedStyle(editor).lineHeight);
-    return isNaN(lh) ? 24 : lh;
-  }
 
   function syncPreviewFromEditor() {
     if (syncing) return;
     syncing = true;
 
-    const lineHeight = getLineHeight();
-    const currentLine = editor.scrollTop / lineHeight;
-    const anchors = Array.from(preview.querySelectorAll('[data-line]'));
+    const view = cmEditor.getView();
+    const scrollTop = view.scrollDOM.scrollTop;
+    const block = view.lineBlockAtHeight(scrollTop);
+    const currentLine = view.state.doc.lineAt(block.from).number - 1; // 0-indexé, comme token.map de markdown-it
+    const fracInBlock = block.height > 0 ? (scrollTop - block.top) / block.height : 0;
 
+    const anchors = Array.from(preview.querySelectorAll('[data-line]'));
     if (anchors.length) {
       let match = anchors[0];
       let next = null;
@@ -69,7 +74,9 @@
       const matchLine = parseFloat(match.dataset.line);
       const nextLine = next ? parseFloat(next.dataset.line) : matchLine + 1;
       const span = nextLine - matchLine || 1;
-      const frac = next ? Math.min(1, Math.max(0, (currentLine - matchLine) / span)) : 0;
+      const frac = next
+        ? Math.min(1, Math.max(0, (currentLine - matchLine + fracInBlock) / span))
+        : 0;
       const nextTop = next ? next.offsetTop : match.offsetTop + match.offsetHeight;
       const targetTop = match.offsetTop + frac * (nextTop - match.offsetTop);
       preview.scrollTop = targetTop - 12;
@@ -84,6 +91,7 @@
 
     const anchors = Array.from(preview.querySelectorAll('[data-line]'));
     if (anchors.length) {
+      const view = cmEditor.getView();
       const previewScrollCenter = preview.scrollTop + 12;
       let match = anchors[0];
       let next = null;
@@ -97,7 +105,12 @@
       const span = nextTop - match.offsetTop || 1;
       const frac = next ? Math.min(1, Math.max(0, (previewScrollCenter - match.offsetTop) / span)) : 0;
       const targetLine = matchLine + frac * (nextLine - matchLine);
-      editor.scrollTop = targetLine * getLineHeight();
+
+      const doc = view.state.doc;
+      const lineNum = Math.min(doc.lines, Math.max(1, Math.floor(targetLine) + 1));
+      const block = view.lineBlockAt(doc.line(lineNum).from);
+      const lineFrac = targetLine - Math.floor(targetLine);
+      view.scrollDOM.scrollTop = block.top + lineFrac * block.height;
     }
 
     requestAnimationFrame(() => { syncing = false; });
@@ -110,13 +123,6 @@
       requestAnimationFrame(() => { fn(); rafPending = false; });
     };
   }
-
-  editor.addEventListener('scroll', throttledRaf(syncPreviewFromEditor));
-  preview.addEventListener('scroll', throttledRaf(syncEditorFromPreview));
-
-  docTitle.addEventListener('change', () => {
-    saveToLocalStorage(editor.value, docTitle.value);
-  });
 
   // ---------- Modes d'affichage (split / édition / aperçu) ----------
   document.querySelectorAll('.mode-btn').forEach(btn => {
@@ -166,27 +172,23 @@
       const action = btn.dataset.action;
 
       if (action === 'new') {
-        if (editor.value && !confirm('Créer un nouveau document ? Le contenu actuel sera perdu s\'il n\'est pas exporté.')) return;
-        editor.value = '';
+        if (cmEditor.getValue() && !confirm('Créer un nouveau document ? Le contenu actuel sera perdu s\'il n\'est pas exporté.')) return;
+        cmEditor.setValue('');
         docTitle.value = 'sans-titre';
-        onEditorInput();
-        renderPreview();
       }
 
       if (action === 'open') {
         try {
           const { content, title } = await openMarkdownFile();
-          editor.value = content;
+          cmEditor.setValue(content);
           docTitle.value = title;
-          onEditorInput();
-          renderPreview();
         } catch (e) {
           console.warn('Ouverture annulée ou impossible :', e.message);
         }
       }
 
       if (action === 'save') {
-        exportAsMarkdown(editor.value, docTitle.value);
+        exportAsMarkdown(cmEditor.getValue(), docTitle.value);
       }
 
       if (action === 'export-html') {
@@ -203,7 +205,7 @@
   function init() {
     initTheme();
     const { content, title } = loadFromLocalStorage();
-    editor.value = content || `# Bienvenue
+    const initialContent = content || `# Bienvenue
 
 Commence à écrire en **markdown** ici, l'aperçu se met à jour en direct à droite.
 
@@ -216,6 +218,11 @@ console.log("bloc de code coloré");
 \`\`\`
 `;
     docTitle.value = title;
+
+    cmEditor = createMarkdownEditor(editorMount, initialContent, onEditorChange);
+    cmEditor.getView().scrollDOM.addEventListener('scroll', throttledRaf(syncPreviewFromEditor));
+    preview.addEventListener('scroll', throttledRaf(syncEditorFromPreview));
+
     renderPreview();
     updateStats();
   }

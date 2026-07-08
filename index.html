@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MD — éditeur markdown</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="theme-color" content="#1a1d23">
 <link rel="stylesheet" href="css/editor.css">
 <link rel="stylesheet" id="preview-theme" href="css/themes/github.css">
 <link rel="stylesheet" href="css/print.css">
@@ -63,7 +67,7 @@
 
 <main class="workspace" data-mode="split">
   <section class="pane pane-editor">
-    <textarea id="editor" spellcheck="false" placeholder="# Commence à écrire…"></textarea>
+    <div id="editor-mount" class="editor-mount"></div>
   </section>
 
   <div class="pane-resizer" id="resizer"></div>
@@ -83,6 +87,7 @@
 <script src="js/vendor/markdown-it.min.js"></script>
 <script src="js/vendor/purify.min.js"></script>
 <script src="js/vendor/highlight.min.js"></script>
+<script src="js/vendor/codemirror.min.js"></script>
 <link rel="stylesheet" href="css/vendor/atom-one-dark.min.css">
 
 <!-- App -->
@@ -91,6 +96,19 @@
 <script src="js/themes.js"></script>
 <script src="js/theme-styles.js"></script>
 <script src="js/export.js"></script>
+<script src="js/editor-cm.js"></script>
 <script src="js/app.js"></script>
+
+<script>
+  // PWA : les service workers exigent https:// ou localhost — ça échoue
+  // silencieusement en file:// (double-clic), ce qui est normal et sans impact.
+  if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch((err) => {
+        console.warn('Service worker non enregistré :', err.message);
+      });
+    });
+  }
+</script>
 </body>
 </html>
