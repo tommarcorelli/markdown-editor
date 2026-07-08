@@ -220,5 +220,17 @@ console.log("bloc de code coloré");
     updateStats();
   }
 
-  init();
+  function showFatalError(err) {
+    console.error('Erreur fatale au démarrage de l\'éditeur :', err);
+    const banner = document.createElement('div');
+    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#e0665a;color:#1a1d23;font-family:monospace;font-size:13px;padding:10px 16px;z-index:9999;';
+    banner.textContent = 'Erreur au chargement de l\'éditeur : ' + (err && err.message ? err.message : err);
+    document.body.appendChild(banner);
+  }
+
+  try {
+    init();
+  } catch (err) {
+    showFatalError(err);
+  }
 })();

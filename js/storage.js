@@ -1,22 +1,42 @@
-// storage.js — autosave localStorage + ouverture de fichiers .md locaux
+// storage.js — autosave localStorage (avec fallback mémoire) + ouverture de fichiers .md locaux
 const STORAGE_KEY = 'md-editor:content';
 const STORAGE_TITLE_KEY = 'md-editor:title';
 
+// Certains navigateurs bloquent localStorage sur les pages ouvertes en file://
+// (origine "opaque") ou en navigation privée stricte. On teste une fois et on
+// bascule sur un stockage en mémoire si besoin, pour que l'app ne plante jamais.
+const memoryFallback = {};
+let localStorageAvailable = true;
+try {
+  const testKey = '__md_editor_test__';
+  localStorage.setItem(testKey, '1');
+  localStorage.removeItem(testKey);
+} catch (e) {
+  localStorageAvailable = false;
+  console.warn('localStorage indisponible (file:// ou navigation privée) — fallback en mémoire activé.');
+}
+
+function safeGet(key) {
+  if (!localStorageAvailable) return memoryFallback[key] ?? null;
+  try { return localStorage.getItem(key); } catch (e) { return memoryFallback[key] ?? null; }
+}
+
+function safeSet(key, value) {
+  if (!localStorageAvailable) { memoryFallback[key] = value; return true; }
+  try { localStorage.setItem(key, value); return true; }
+  catch (e) { memoryFallback[key] = value; return true; }
+}
+
 function saveToLocalStorage(content, title) {
-  try {
-    localStorage.setItem(STORAGE_KEY, content);
-    localStorage.setItem(STORAGE_TITLE_KEY, title);
-    return true;
-  } catch (e) {
-    console.error('Sauvegarde locale impossible :', e);
-    return false;
-  }
+  safeSet(STORAGE_KEY, content);
+  safeSet(STORAGE_TITLE_KEY, title);
+  return true;
 }
 
 function loadFromLocalStorage() {
   return {
-    content: localStorage.getItem(STORAGE_KEY) || '',
-    title: localStorage.getItem(STORAGE_TITLE_KEY) || 'sans-titre'
+    content: safeGet(STORAGE_KEY) || '',
+    title: safeGet(STORAGE_TITLE_KEY) || 'sans-titre'
   };
 }
 

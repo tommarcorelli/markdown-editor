@@ -4,12 +4,12 @@ const THEME_STORAGE_KEY = 'md-editor:theme';
 function applyTheme(themeName) {
   const link = document.getElementById('preview-theme');
   link.href = `css/themes/${themeName}.css`;
-  localStorage.setItem(THEME_STORAGE_KEY, themeName);
+  safeSet(THEME_STORAGE_KEY, themeName);
 }
 
 function initTheme() {
   const select = document.getElementById('theme-select');
-  const saved = localStorage.getItem(THEME_STORAGE_KEY) || 'github';
+  const saved = safeGet(THEME_STORAGE_KEY) || 'github';
   select.value = saved;
   applyTheme(saved);
 
