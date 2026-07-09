@@ -1,15 +1,27 @@
-/* print.css — appliquée uniquement lors de l'impression / export PDF */
+/* print.css — appliquée uniquement lors de l'impression / export PDF (Ctrl+P
+   depuis l'app). Respecte le thème actif plutôt que de forcer noir sur blanc :
+   sinon un thème sombre (Nuit, Dracula, Terminal…) imprime du texte noir sur
+   fond sombre, illisible. */
 @media print {
-  .topbar, .statusbar, .pane-editor, .pane-resizer {
+  .topbar, .toolbar, .statusbar, .pane-editor, .pane-resizer {
     display: none !important;
   }
   .workspace {
     display: block !important;
   }
+
+  /* Force les navigateurs à imprimer les couleurs de fond (sinon ignorées
+     par défaut) — sans ça, tous les thèmes autres que blanc perdent leur
+     identité visuelle à l'impression. */
+  html, body, .pane-preview, #preview, .markdown-body {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
   .pane-preview {
     flex: none !important;
     overflow: visible !important;
-    background: #fff !important;
   }
   #preview {
     overflow: visible !important;
@@ -18,15 +30,23 @@
   }
   .markdown-body {
     max-width: 100% !important;
-    color: #000 !important;
   }
   .markdown-body pre, .markdown-body code {
     white-space: pre-wrap !important;
     word-break: break-word;
   }
-  a { color: inherit !important; text-decoration: underline !important; }
+
+  /* URL visible à côté des liens externes — inutile de cliquer sur du papier */
+  .markdown-body a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.75em;
+    opacity: 0.6;
+    font-weight: 400;
+  }
+
+  .doc-toc { break-after: page; }
 
   @page {
-    margin: 2cm 1.8cm;
+    margin: 1.8cm 1.6cm;
   }
 }

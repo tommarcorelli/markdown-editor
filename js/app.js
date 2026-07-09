@@ -41,12 +41,22 @@
     updateStats();
 
     clearTimeout(debounceTimer);
+    const len = cmEditor.getValue().length;
+    // Sur un gros document, on laisse un peu plus de temps entre les frappes
+    // et le re-rendu, pour éviter les à-coups pendant la saisie.
+    const delay = len > 200000 ? 500 : len > 50000 ? 300 : 150;
+
     debounceTimer = setTimeout(() => {
       renderPreview();
-      saveToLocalStorage(cmEditor.getValue(), docTitle.value);
-      saveStatus.textContent = 'Enregistré';
-      saveStatus.classList.remove('unsaved');
-    }, 150);
+      const saved = saveToLocalStorage(cmEditor.getValue(), docTitle.value);
+      if (saved === 'quota-exceeded') {
+        saveStatus.textContent = 'Trop volumineux pour l\'autosave — pense à exporter';
+        saveStatus.classList.add('unsaved');
+      } else {
+        saveStatus.textContent = 'Enregistré';
+        saveStatus.classList.remove('unsaved');
+      }
+    }, delay);
   }
 
   docTitle.addEventListener('change', () => {
@@ -132,6 +142,53 @@
     };
   }
 
+  // ---------- Barre d'outils de formatage ----------
+  const toolbarActions = {
+    bold: () => cmEditor.wrapSelection('**', '**', 'texte en gras'),
+    italic: () => cmEditor.wrapSelection('*', '*', 'texte en italique'),
+    strike: () => cmEditor.wrapSelection('~~', '~~', 'texte barré'),
+    h1: () => cmEditor.setHeadingLevel(1),
+    h2: () => cmEditor.setHeadingLevel(2),
+    h3: () => cmEditor.setHeadingLevel(3),
+    ul: () => cmEditor.toggleLinePrefix('- '),
+    ol: () => cmEditor.toggleLinePrefix('1. '),
+    task: () => cmEditor.toggleLinePrefix('- [ ] '),
+    quote: () => cmEditor.toggleLinePrefix('> '),
+    code: () => cmEditor.wrapSelection('`', '`', 'code'),
+    codeblock: () => cmEditor.wrapSelection('```\n', '\n```', 'code'),
+    link: () => cmEditor.wrapSelection('[', '](https://)', 'texte du lien'),
+    image: () => cmEditor.triggerImagePicker(),
+    table: () => cmEditor.insertTable(),
+    hr: () => cmEditor.insertText('\n---\n')
+  };
+
+  document.getElementById('toolbar').addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-cmd]');
+    if (!btn) return;
+    const action = toolbarActions[btn.dataset.cmd];
+    if (action) action();
+  });
+
+  // ---------- Raccourcis clavier globaux ----------
+  window.addEventListener('keydown', (e) => {
+    const mod = e.ctrlKey || e.metaKey;
+    if (!mod) return;
+
+    if (e.key === 's') {
+      e.preventDefault();
+      exportAsMarkdown(cmEditor.getValue(), docTitle.value);
+    } else if (e.key.toLowerCase() === 'b') {
+      e.preventDefault();
+      toolbarActions.bold();
+    } else if (e.key.toLowerCase() === 'i') {
+      e.preventDefault();
+      toolbarActions.italic();
+    } else if (e.key.toLowerCase() === 'k') {
+      e.preventDefault();
+      toolbarActions.link();
+    }
+  });
+
   // ---------- Modes d'affichage (split / édition / aperçu) ----------
   document.querySelectorAll('.mode-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -199,36 +256,41 @@
       fileMenu.classList.remove('open');
       const action = btn.dataset.action;
 
-      if (action === 'new') {
-        if (cmEditor.getValue() && !confirm('Créer un nouveau document ? Le contenu actuel sera perdu s\'il n\'est pas exporté.')) return;
-        cmEditor.setValue('');
-        docTitle.value = 'sans-titre';
-      }
+      try {
+        if (action === 'new') {
+          if (cmEditor.getValue() && !confirm('Créer un nouveau document ? Le contenu actuel sera perdu s\'il n\'est pas exporté.')) return;
+          cmEditor.setValue('');
+          docTitle.value = 'sans-titre';
+        }
 
-      if (action === 'open') {
-        try {
+        if (action === 'open') {
           const { content, title } = await openMarkdownFile();
           cmEditor.setValue(content);
           docTitle.value = title;
-        } catch (e) {
-          console.warn('Ouverture annulée ou impossible :', e.message);
         }
-      }
 
-      if (action === 'save') {
-        exportAsMarkdown(cmEditor.getValue(), docTitle.value);
-      }
+        if (action === 'save') {
+          exportAsMarkdown(cmEditor.getValue(), docTitle.value);
+        }
 
-      if (action === 'export-html') {
-        exportAsHtml(preview.innerHTML, docTitle.value, themeSelect.value);
-      }
+        if (action === 'export-html') {
+          exportAsHtml(preview.innerHTML, docTitle.value, themeSelect.value);
+        }
 
-      if (action === 'export-pdf') {
-        exportAsPdf();
-      }
+        if (action === 'export-pdf') {
+          exportAsPdf();
+        }
 
-      if (action === 'export-slides') {
-        exportAsSlides(cmEditor.getValue(), docTitle.value, themeSelect.value);
+        if (action === 'export-slides') {
+          exportAsSlides(cmEditor.getValue(), docTitle.value, themeSelect.value);
+        }
+      } catch (err) {
+        console.error(`Échec de l'action "${action}" :`, err);
+        if (action === 'open') {
+          console.warn('Ouverture annulée ou impossible :', err.message);
+        } else {
+          alert(`Une erreur est survenue (${action}) : ${err.message || err}\n\nLe contenu de ton document n'est pas affecté.`);
+        }
       }
     });
   });

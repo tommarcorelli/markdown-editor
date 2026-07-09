@@ -1,5 +1,5 @@
-// editor-cm.js — instancie CodeMirror 6 et expose une API simple,
-// pour que le reste de l'app (app.js) n'ait pas à connaître l'API interne de CM.
+// editor-cm.js — instancie CodeMirror 6 et expose une API riche
+// (formatage, raccourcis, listes intelligentes, images collées/déposées).
 const CM = window.CMBundle;
 
 // Palette de coloration syntaxique markdown, calée sur les couleurs du thème "encre"
@@ -16,8 +16,8 @@ const markdownHighlight = CM.HighlightStyle.define([
   { tag: CM.tags.monospace, color: '#ffb86b', fontFamily: 'var(--font-mono)' },
   { tag: CM.tags.quote, color: '#8b8f9a', fontStyle: 'italic' },
   { tag: CM.tags.list, color: '#5eead4' },
-  { tag: CM.tags.processingInstruction, color: '#6b7280' }, // marqueurs #, *, > etc.
-  { tag: CM.tags.contentSeparator, color: '#5eead4' }, // ---
+  { tag: CM.tags.processingInstruction, color: '#6b7280' },
+  { tag: CM.tags.contentSeparator, color: '#5eead4' },
   { tag: CM.tags.meta, color: '#6b7280' }
 ]);
 
@@ -41,12 +41,120 @@ const editorTheme = CM.EditorView.theme({
     backgroundColor: 'rgba(94, 234, 212, 0.18) !important'
   },
   '.cm-placeholder': { color: 'var(--ink-text-dim)', fontStyle: 'normal' },
-  '.cm-line': { padding: '0' }
+  '.cm-line': { padding: '0' },
+  '&.cm-drop-active': { outline: '2px dashed #5eead4', outlineOffset: '-4px' }
 }, { dark: true });
 
+// ---------- Continuation intelligente des listes (Entrée) ----------
+const LIST_BULLET_RE = /^(\s*)([-*+])(\s+)(\[[ xX]\]\s+)?/;
+const LIST_ORDERED_RE = /^(\s*)(\d+)([.)])(\s+)/;
+
+function smartListEnter(view) {
+  const { state } = view;
+  const { from, to } = state.selection.main;
+  if (from !== to) return false; // laisse le comportement par défaut si sélection active
+
+  const line = state.doc.lineAt(from);
+  const textBefore = line.text.slice(0, from - line.from);
+  const textAfter = line.text.slice(from - line.from);
+
+  const bulletMatch = textBefore.match(LIST_BULLET_RE);
+  const orderedMatch = textBefore.match(LIST_ORDERED_RE);
+
+  if (bulletMatch) {
+    const [full, indent, bullet, , checkbox] = bulletMatch;
+    // Ligne de liste vide -> on sort de la liste (supprime le marqueur)
+    if (textBefore.trim() === bullet && textAfter.trim() === '') {
+      view.dispatch({
+        changes: { from: line.from, to: from, insert: '' },
+        selection: { anchor: line.from }
+      });
+      return true;
+    }
+    const prefix = indent + bullet + ' ' + (checkbox ? '[ ] ' : '');
+    view.dispatch({
+      changes: { from, to, insert: '\n' + prefix },
+      selection: { anchor: from + 1 + prefix.length }
+    });
+    return true;
+  }
+
+  if (orderedMatch) {
+    const [full, indent, num, delim] = orderedMatch;
+    if (textBefore.trim() === `${num}${delim}` && textAfter.trim() === '') {
+      view.dispatch({
+        changes: { from: line.from, to: from, insert: '' },
+        selection: { anchor: line.from }
+      });
+      return true;
+    }
+    const nextNum = parseInt(num, 10) + 1;
+    const prefix = `${indent}${nextNum}${delim} `;
+    view.dispatch({
+      changes: { from, to, insert: '\n' + prefix },
+      selection: { anchor: from + 1 + prefix.length }
+    });
+    return true;
+  }
+
+  return false; // pas dans une liste, comportement par défaut
+}
+
+// ---------- Images collées / déposées -> base64 embarqué ----------
+function fileToDataUri(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+}
+
+function insertImageAtPos(view, pos, altText, dataUri) {
+  const markdown = `![${altText}](${dataUri})`;
+  view.dispatch({
+    changes: { from: pos, to: pos, insert: markdown },
+    selection: { anchor: pos + markdown.length }
+  });
+}
+
+async function handleImageFile(view, file, pos) {
+  if (!file.type.startsWith('image/')) return false;
+  try {
+    const dataUri = await fileToDataUri(file);
+    const altText = file.name ? file.name.replace(/\.[^.]+$/, '') : 'image';
+    insertImageAtPos(view, pos, altText, dataUri);
+  } catch (e) {
+    console.warn('Impossible d\'intégrer l\'image :', e);
+  }
+  return true;
+}
+
+const imageHandling = CM.EditorView.domEventHandlers({
+  paste(event, view) {
+    const items = Array.from(event.clipboardData?.items || []);
+    const imageItem = items.find((it) => it.type.startsWith('image/'));
+    if (!imageItem) return false;
+    const file = imageItem.getAsFile();
+    if (!file) return false;
+    event.preventDefault();
+    handleImageFile(view, file, view.state.selection.main.from);
+    return true;
+  },
+  drop(event, view) {
+    const files = Array.from(event.dataTransfer?.files || []);
+    const imageFile = files.find((f) => f.type.startsWith('image/'));
+    if (!imageFile) return false;
+    event.preventDefault();
+    const pos = view.posAtCoords({ x: event.clientX, y: event.clientY }) ?? view.state.selection.main.from;
+    handleImageFile(view, imageFile, pos);
+    return true;
+  }
+});
+
 /**
- * Crée l'éditeur CodeMirror et retourne une API minimaliste :
- * getValue / setValue / onChange / getView / focus
+ * Crée l'éditeur CodeMirror et retourne une API riche :
+ * getValue / setValue / focus / getView / wrapSelection / insertText / toggleLinePrefix / insertTable
  */
 function createMarkdownEditor(mountEl, initialContent, onChangeCallback) {
   const state = CM.EditorState.create({
@@ -55,12 +163,19 @@ function createMarkdownEditor(mountEl, initialContent, onChangeCallback) {
       CM.history(),
       CM.drawSelection(),
       CM.highlightSpecialChars(),
-      CM.keymap.of([...CM.defaultKeymap, ...CM.historyKeymap, CM.indentWithTab]),
+      CM.keymap.of([
+        { key: 'Enter', run: smartListEnter },
+        { key: 'Tab', run: CM.indentMore },
+        { key: 'Shift-Tab', run: CM.indentLess },
+        ...CM.defaultKeymap,
+        ...CM.historyKeymap
+      ]),
       CM.markdown(),
       CM.syntaxHighlighting(markdownHighlight),
       CM.EditorView.lineWrapping,
       CM.placeholder('# Commence à écrire…'),
       editorTheme,
+      imageHandling,
       CM.EditorView.updateListener.of((update) => {
         if (update.docChanged) {
           onChangeCallback(update.state.doc.toString());
@@ -71,6 +186,86 @@ function createMarkdownEditor(mountEl, initialContent, onChangeCallback) {
 
   const view = new CM.EditorView({ state, parent: mountEl });
 
+  // Entoure la sélection de `before`/`after` (ex: ** **). Sans sélection,
+  // insère un texte indicatif déjà sélectionné pour pouvoir écrire par-dessus.
+  function wrapSelection(before, after, placeholderText) {
+    const { state } = view;
+    const changes = state.changeByRange((range) => {
+      const selected = state.sliceDoc(range.from, range.to);
+      const text = selected || placeholderText;
+      const insert = before + text + after;
+      const insideFrom = range.from + before.length;
+      const insideTo = insideFrom + text.length;
+      return {
+        changes: { from: range.from, to: range.to, insert },
+        range: selected
+          ? CM.EditorSelection.range(range.from + insert.length, range.from + insert.length)
+          : CM.EditorSelection.range(insideFrom, insideTo)
+      };
+    });
+    view.dispatch(state.update(changes));
+    view.focus();
+  }
+
+  // Ajoute/retire un préfixe en début de chaque ligne sélectionnée (titres, citation, liste)
+  function toggleLinePrefix(prefix) {
+    const { state } = view;
+    const range = state.selection.main;
+    const startLine = state.doc.lineAt(range.from).number;
+    const endLine = state.doc.lineAt(range.to).number;
+    const changes = [];
+    for (let ln = startLine; ln <= endLine; ln++) {
+      const line = state.doc.line(ln);
+      if (line.text.startsWith(prefix)) {
+        changes.push({ from: line.from, to: line.from + prefix.length, insert: '' });
+      } else {
+        changes.push({ from: line.from, insert: prefix });
+      }
+    }
+    view.dispatch({ changes });
+    view.focus();
+  }
+
+  // Remplace le préfixe de titre existant (## ) par un nouveau niveau, sans dupliquer
+  function setHeadingLevel(level) {
+    const { state } = view;
+    const range = state.selection.main;
+    const line = state.doc.lineAt(range.from);
+    const stripped = line.text.replace(/^#{1,6}\s*/, '');
+    const prefix = '#'.repeat(level) + ' ';
+    view.dispatch({
+      changes: { from: line.from, to: line.to, insert: prefix + stripped }
+    });
+    view.focus();
+  }
+
+  function insertText(text, selectFrom, selectTo) {
+    const pos = view.state.selection.main.from;
+    view.dispatch({
+      changes: { from: pos, to: pos, insert: text },
+      selection: (selectFrom != null)
+        ? { anchor: pos + selectFrom, head: pos + (selectTo ?? selectFrom) }
+        : { anchor: pos + text.length }
+    });
+    view.focus();
+  }
+
+  function insertTable() {
+    const table = '| Colonne 1 | Colonne 2 | Colonne 3 |\n| --- | --- | --- |\n| ligne 1 | ligne 1 | ligne 1 |\n| ligne 2 | ligne 2 | ligne 2 |\n';
+    insertText(table);
+  }
+
+  function triggerImagePicker() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = () => {
+      const file = input.files[0];
+      if (file) handleImageFile(view, file, view.state.selection.main.from);
+    };
+    input.click();
+  }
+
   return {
     getValue: () => view.state.doc.toString(),
     setValue: (text) => {
@@ -79,6 +274,12 @@ function createMarkdownEditor(mountEl, initialContent, onChangeCallback) {
       });
     },
     focus: () => view.focus(),
-    getView: () => view
+    getView: () => view,
+    wrapSelection,
+    toggleLinePrefix,
+    setHeadingLevel,
+    insertText,
+    insertTable,
+    triggerImagePicker
   };
 }

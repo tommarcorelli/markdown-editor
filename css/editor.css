@@ -184,6 +184,14 @@ body {
 .menu-toggle:hover { background: var(--ink-border); }
 .menu-toggle input { accent-color: var(--accent); cursor: pointer; }
 
+.menu-hint {
+  padding: 2px 12px 8px;
+  font-size: 10.5px;
+  line-height: 1.4;
+  color: var(--ink-text-dim);
+  max-width: 210px;
+}
+
 #options-menu .menu-list { min-width: 200px; }
 
 .menu-list {
@@ -218,6 +226,51 @@ body {
 }
 .menu-list button:hover { background: var(--ink-border); color: var(--accent); }
 .menu-list button:hover .mi { color: var(--accent); }
+
+/* ---------- TOOLBAR ---------- */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 14px;
+  background: var(--ink-bg-raised);
+  border-bottom: 1px solid var(--ink-border);
+  flex-shrink: 0;
+  overflow-x: auto;
+}
+.toolbar button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 6px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  color: var(--ink-text-dim);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.1s, color 0.1s, border-color 0.1s;
+}
+.toolbar button:hover {
+  background: var(--ink-border);
+  color: var(--accent);
+  border-color: var(--ink-border);
+}
+.toolbar button:active { transform: translateY(1px); }
+.toolbar-sep {
+  width: 1px;
+  height: 18px;
+  background: var(--ink-border);
+  margin: 0 6px;
+  flex-shrink: 0;
+}
+.toolbar::-webkit-scrollbar { height: 4px; }
+.toolbar::-webkit-scrollbar-thumb { background: var(--ink-border); }
 
 /* ---------- WORKSPACE / SPLIT PANE ---------- */
 .workspace {

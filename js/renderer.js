@@ -50,6 +50,14 @@ md.core.ruler.push('inject_heading_ids', (state) => {
 });
 
 function renderMarkdown(source) {
-  const rawHtml = md.render(source || '');
-  return DOMPurify.sanitize(rawHtml, { ADD_ATTR: ['target'] });
+  try {
+    const rawHtml = md.render(source || '');
+    return DOMPurify.sanitize(rawHtml, { ADD_ATTR: ['target'] });
+  } catch (e) {
+    console.error('Erreur de rendu markdown :', e);
+    return `<div style="padding:16px;border:1px solid #e0665a;border-radius:6px;color:#e0665a;font-family:monospace;font-size:13px;">
+      Erreur de rendu — un passage du document n'a pas pu être interprété.<br>
+      Le contenu reste intact dans l'éditeur, seul l'aperçu est affecté.
+    </div>`;
+  }
 }

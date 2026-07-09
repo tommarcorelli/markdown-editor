@@ -22,15 +22,20 @@ function safeGet(key) {
 }
 
 function safeSet(key, value) {
-  if (!localStorageAvailable) { memoryFallback[key] = value; return true; }
-  try { localStorage.setItem(key, value); return true; }
-  catch (e) { memoryFallback[key] = value; return true; }
+  if (!localStorageAvailable) { memoryFallback[key] = value; return 'memory'; }
+  try { localStorage.setItem(key, value); return 'ok'; }
+  catch (e) {
+    memoryFallback[key] = value;
+    // QuotaExceededError : le document est trop gros pour localStorage (~5-10 Mo selon navigateurs).
+    // Le contenu reste en mémoire pour la session en cours, mais ne survivra pas à un rechargement.
+    return e.name === 'QuotaExceededError' ? 'quota-exceeded' : 'memory';
+  }
 }
 
 function saveToLocalStorage(content, title) {
-  safeSet(STORAGE_KEY, content);
+  const result = safeSet(STORAGE_KEY, content);
   safeSet(STORAGE_TITLE_KEY, title);
-  return true;
+  return result;
 }
 
 function loadFromLocalStorage() {

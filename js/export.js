@@ -75,8 +75,13 @@ function exportAsHtml(htmlContent, title, themeName) {
     .markdown-body { padding: 32px 24px !important; }
   }
   @media print {
-    body { background: #fff !important; padding: 0 !important; }
-    .markdown-body { box-shadow: none !important; border-top: none !important; }
+    html, body, .markdown-body, .doc-toc {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      color-adjust: exact !important;
+    }
+    body { background: #fff !important; padding: 0 !important; display: block; }
+    .markdown-body { box-shadow: none !important; border-top: none !important; border: none !important; }
     .doc-footer { display: none; }
   }
 </style>
