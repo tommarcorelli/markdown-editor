@@ -24,6 +24,31 @@ md.core.ruler.push('inject_line_numbers', (state) => {
   });
 });
 
+// Génère un id (ancre) unique sur chaque titre à partir de son texte,
+// pour pouvoir linker vers une section précise (#installation-docker).
+md.core.ruler.push('inject_heading_ids', (state) => {
+  const slugCounts = {};
+  const tokens = state.tokens;
+  for (let i = 0; i < tokens.length; i++) {
+    if (tokens[i].type === 'heading_open') {
+      const inline = tokens[i + 1];
+      const text = inline ? inline.content : '';
+      let slug = text
+        .toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // enlève les accents
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '') || 'section';
+      if (slugCounts[slug] != null) {
+        slugCounts[slug] += 1;
+        slug = `${slug}-${slugCounts[slug]}`;
+      } else {
+        slugCounts[slug] = 0;
+      }
+      tokens[i].attrSet('id', slug);
+    }
+  }
+});
+
 function renderMarkdown(source) {
   const rawHtml = md.render(source || '');
   return DOMPurify.sanitize(rawHtml, { ADD_ATTR: ['target'] });

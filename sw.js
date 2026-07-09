@@ -1,5 +1,5 @@
 // sw.js — cache-first pour l'app shell, pour un fonctionnement 100% hors-ligne
-const CACHE_NAME = 'md-editor-v1';
+const CACHE_NAME = 'md-editor-v2';
 
 const APP_SHELL = [
   './',
@@ -8,10 +8,22 @@ const APP_SHELL = [
   './css/editor.css',
   './css/print.css',
   './css/vendor/atom-one-dark.min.css',
+  './css/themes/_base.css',
   './css/themes/github.css',
   './css/themes/minimal.css',
+  './css/themes/academique.css',
+  './css/themes/ardoise.css',
   './css/themes/sepia.css',
+  './css/themes/rose.css',
+  './css/themes/lavande.css',
+  './css/themes/solarized.css',
+  './css/themes/nord.css',
+  './css/themes/foret.css',
   './css/themes/nuit.css',
+  './css/themes/dracula.css',
+  './css/themes/gruvbox.css',
+  './css/themes/monochrome.css',
+  './css/themes/terminal.css',
   './css/themes/neobrutalist.css',
   './css/themes/cyberpunk.css',
   './js/renderer.js',

@@ -1,0 +1,48 @@
+.markdown-body {
+  font-family: -apple-system, 'Segoe UI', sans-serif;
+  font-size: 16px;
+  line-height: 1.7;
+  color: #2b3440;
+  background: #eef1f4;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 4px 0 20px;
+}
+.markdown-body h1, .markdown-body h2, .markdown-body h3 {
+  color: #24344d;
+  font-weight: 700;
+}
+.markdown-body h1 { font-size: 1.9em; border-bottom: 2px solid #3d5a80; padding-bottom: 0.3em; }
+.markdown-body h2 { font-size: 1.45em; margin-top: 1.7em; }
+.markdown-body h3 { font-size: 1.15em; margin-top: 1.4em; }
+.markdown-body a { color: #3d5a80; text-decoration: none; border-bottom: 1px solid #98c1d9; }
+.markdown-body a:hover { border-bottom-color: #3d5a80; }
+.markdown-body strong { color: #1a2433; }
+.markdown-body code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85em;
+  background: #dde3ea;
+  color: #24344d;
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+}
+.markdown-body pre {
+  background: #24344d;
+  color: #dde3ea;
+  padding: 14px 16px;
+  border-radius: 6px;
+  overflow-x: auto;
+}
+.markdown-body pre code { background: transparent; color: inherit; padding: 0; }
+.markdown-body blockquote {
+  border-left: 3px solid #98c1d9;
+  margin: 1.3em 0;
+  padding: 0.2em 0 0.2em 1.1em;
+  color: #5c6b7d;
+  background: #e3e8ee;
+}
+.markdown-body table { border-collapse: collapse; width: 100%; margin: 1.5em 0; }
+.markdown-body th, .markdown-body td { border: 1px solid #c8d1db; padding: 8px 12px; }
+.markdown-body th { background: #dde3ea; }
+.markdown-body img { max-width: 100%; border-radius: 6px; }
+.markdown-body hr { border: none; border-top: 1px solid #c8d1db; margin: 2.4em 0; }
