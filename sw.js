@@ -1,5 +1,5 @@
 // sw.js — cache-first pour l'app shell, pour un fonctionnement 100% hors-ligne
-const CACHE_NAME = 'md-editor-v2';
+const CACHE_NAME = 'md-editor-v3';
 
 const APP_SHELL = [
   './',
@@ -13,24 +13,30 @@ const APP_SHELL = [
   './css/themes/minimal.css',
   './css/themes/academique.css',
   './css/themes/ardoise.css',
+  './css/themes/kraft.css',
   './css/themes/sepia.css',
+  './css/themes/corail.css',
   './css/themes/rose.css',
   './css/themes/lavande.css',
   './css/themes/solarized.css',
   './css/themes/nord.css',
   './css/themes/foret.css',
+  './css/themes/encre.css',
   './css/themes/nuit.css',
   './css/themes/dracula.css',
   './css/themes/gruvbox.css',
   './css/themes/monochrome.css',
   './css/themes/terminal.css',
+  './css/themes/synthwave.css',
   './css/themes/neobrutalist.css',
   './css/themes/cyberpunk.css',
   './js/renderer.js',
   './js/storage.js',
   './js/themes.js',
   './js/theme-styles.js',
+  './js/doc-features.js',
   './js/export.js',
+  './js/export-slides.js',
   './js/editor-cm.js',
   './js/app.js',
   './js/vendor/markdown-it.min.js',

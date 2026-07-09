@@ -39,6 +39,37 @@
 
 /* Règles d'impression communes — évite qu'un tableau, un bloc de code ou une
    citation soit coupé au milieu par un saut de page */
+/* Sommaire (TOC) */
+.doc-toc {
+  border: 1px solid currentColor;
+  border-color: color-mix(in srgb, currentColor 20%, transparent);
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin: 0 0 2em;
+  font-size: 0.9em;
+  opacity: 0.95;
+}
+.doc-toc-title {
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.78em;
+  letter-spacing: 0.06em;
+  opacity: 0.6;
+  margin-bottom: 0.6em;
+}
+.doc-toc ul { list-style: none; margin: 0; padding-left: 1.1em; }
+.doc-toc > ul { padding-left: 0; }
+.doc-toc li { margin: 0.35em 0; }
+.doc-toc a { text-decoration: none; opacity: 0.85; }
+.doc-toc a:hover { opacity: 1; text-decoration: underline; }
+
+/* Numérotation des sections */
+.heading-num {
+  opacity: 0.55;
+  font-weight: 600;
+  margin-right: 0.15em;
+}
+
 @media print {
   .markdown-body pre,
   .markdown-body table,
@@ -50,4 +81,5 @@
   .markdown-body h4, .markdown-body h5, .markdown-body h6 {
     break-after: avoid;
   }
+  .doc-toc { break-after: page; }
 }

@@ -9,6 +9,9 @@
   const workspace = document.querySelector('.workspace');
   const resizer = document.getElementById('resizer');
   const fileMenu = document.getElementById('file-menu');
+  const optionsMenu = document.getElementById('options-menu');
+  const toggleToc = document.getElementById('toggle-toc');
+  const toggleNumbering = document.getElementById('toggle-numbering');
   const themeSelect = document.getElementById('theme-select');
 
   let debounceTimer = null;
@@ -17,6 +20,11 @@
   // ---------- Rendu live (debounced) ----------
   function renderPreview() {
     preview.innerHTML = renderMarkdown(cmEditor.getValue());
+    if (toggleNumbering.checked) applyHeadingNumbers(preview);
+    if (toggleToc.checked) {
+      const tocHtml = buildTocHtml(preview);
+      if (tocHtml) preview.insertAdjacentHTML('afterbegin', tocHtml);
+    }
   }
 
   function updateStats() {
@@ -158,13 +166,33 @@
     });
   })();
 
-  // ---------- Menu Fichier ----------
-  const menuTrigger = fileMenu.querySelector('.menu-trigger');
-  menuTrigger.addEventListener('click', (e) => {
-    e.stopPropagation();
-    fileMenu.classList.toggle('open');
+  // ---------- Menus (Fichier + Options) ----------
+  document.querySelectorAll('.menu').forEach((menu) => {
+    const trigger = menu.querySelector('.menu-trigger');
+    trigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const wasOpen = menu.classList.contains('open');
+      document.querySelectorAll('.menu.open').forEach((m) => m.classList.remove('open'));
+      if (!wasOpen) menu.classList.add('open');
+    });
+    menu.querySelector('.menu-list').addEventListener('click', (e) => e.stopPropagation());
   });
-  document.addEventListener('click', () => fileMenu.classList.remove('open'));
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.menu.open').forEach((m) => m.classList.remove('open'));
+  });
+
+  const TOC_STORAGE_KEY = 'md-editor:toc';
+  const NUMBERING_STORAGE_KEY = 'md-editor:numbering';
+  toggleToc.checked = safeGet(TOC_STORAGE_KEY) === '1';
+  toggleNumbering.checked = safeGet(NUMBERING_STORAGE_KEY) === '1';
+  toggleToc.addEventListener('change', () => {
+    safeSet(TOC_STORAGE_KEY, toggleToc.checked ? '1' : '0');
+    renderPreview();
+  });
+  toggleNumbering.addEventListener('change', () => {
+    safeSet(NUMBERING_STORAGE_KEY, toggleNumbering.checked ? '1' : '0');
+    renderPreview();
+  });
 
   fileMenu.querySelectorAll('[data-action]').forEach(btn => {
     btn.addEventListener('click', async () => {
@@ -197,6 +225,10 @@
 
       if (action === 'export-pdf') {
         exportAsPdf();
+      }
+
+      if (action === 'export-slides') {
+        exportAsSlides(cmEditor.getValue(), docTitle.value, themeSelect.value);
       }
     });
   });
