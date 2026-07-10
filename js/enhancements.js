@@ -60,6 +60,7 @@
     { icon: '↓', label: 'Enregistrer (.md)', shortcut: '⌘S', run: () => fileAction('save') },
     { icon: '⤒', label: 'Nouveau document', run: () => fileAction('new') },
     { icon: '⤴', label: 'Ouvrir un fichier…', run: () => fileAction('open') },
+    { icon: '🕘', label: 'Historique des versions', run: () => { if (window.openVersionHistory) window.openVersionHistory(); } },
     { icon: '↗', label: 'Exporter en HTML', run: () => fileAction('export-html') },
     { icon: '📄', label: 'Exporter en PDF (fidèle au thème)', run: () => fileAction('export-pdf') },
     { icon: '📃', label: 'Exporter en PDF (texte sélectionnable)', run: () => fileAction('export-pdf-vector') },
@@ -85,11 +86,12 @@
   // DOM palette
   const overlay = document.createElement('div');
   overlay.className = 'cmd-overlay';
-  overlay.innerHTML = `<div class="cmd-modal">
-    <input type="text" class="cmd-input" placeholder="Tape une commande…" autocomplete="off" spellcheck="false">
-    <div class="cmd-list"></div>
+  overlay.innerHTML = `<div class="cmd-modal" role="dialog" aria-modal="true" aria-label="Palette de commandes">
+    <input type="text" class="cmd-input" placeholder="Tape une commande…" autocomplete="off" spellcheck="false" aria-label="Rechercher une commande">
+    <div class="cmd-list" role="listbox"></div>
   </div>`;
   document.body.appendChild(overlay);
+  let lastFocusedBeforePalette = null;
   const cmdInput = overlay.querySelector('.cmd-input');
   const cmdList = overlay.querySelector('.cmd-list');
   let filtered = commands.slice();
@@ -109,6 +111,7 @@
   }
 
   function openPalette() {
+    lastFocusedBeforePalette = document.activeElement;
     overlay.classList.add('open');
     cmdInput.value = '';
     filtered = commands.slice();
@@ -116,7 +119,13 @@
     renderList();
     setTimeout(() => cmdInput.focus(), 30);
   }
-  function closePalette() { overlay.classList.remove('open'); }
+  function closePalette() {
+    overlay.classList.remove('open');
+    if (lastFocusedBeforePalette && document.body.contains(lastFocusedBeforePalette)) {
+      lastFocusedBeforePalette.focus();
+    }
+    lastFocusedBeforePalette = null;
+  }
 
   cmdInput.addEventListener('input', () => {
     const q = cmdInput.value.trim().toLowerCase();
@@ -130,6 +139,10 @@
     else if (e.key === 'ArrowUp') { e.preventDefault(); activeIdx = Math.max(0, activeIdx - 1); renderList(); scrollActive(); }
     else if (e.key === 'Enter') { e.preventDefault(); if (filtered[activeIdx]) { filtered[activeIdx].run(); closePalette(); } }
     else if (e.key === 'Escape') { closePalette(); }
+    else if (e.key === 'Tab') {
+      // Seul champ focusable de la modale : on empêche Tab de sortir vers la page en dessous.
+      e.preventDefault();
+    }
   });
   function scrollActive() {
     const el = cmdList.querySelector('.cmd-item.active');

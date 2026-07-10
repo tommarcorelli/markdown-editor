@@ -17,6 +17,11 @@
   let debounceTimer = null;
   let cmEditor = null; // API retournée par createMarkdownEditor()
 
+  function setSaveStatus(text, unsaved) {
+    saveStatus.querySelector('.save-status-text').textContent = text;
+    saveStatus.classList.toggle('unsaved', !!unsaved);
+  }
+
   // ---------- Rendu live (debounced) ----------
   function renderPreview() {
     preview.innerHTML = renderMarkdown(cmEditor.getValue());
@@ -36,8 +41,7 @@
   }
 
   function onEditorChange() {
-    saveStatus.textContent = 'Modifications…';
-    saveStatus.classList.add('unsaved');
+    setSaveStatus('Modifications…', true);
     updateStats();
 
     clearTimeout(debounceTimer);
@@ -46,21 +50,21 @@
     // et le re-rendu, pour éviter les à-coups pendant la saisie.
     const delay = len > 200000 ? 500 : len > 50000 ? 300 : 150;
 
-    debounceTimer = setTimeout(() => {
+    debounceTimer = setTimeout(async () => {
       renderPreview();
-      const saved = saveToLocalStorage(cmEditor.getValue(), docTitle.value);
+      const saved = await persistDocument(cmEditor.getValue(), docTitle.value);
       if (saved === 'quota-exceeded') {
-        saveStatus.textContent = 'Trop volumineux pour l\'autosave — pense à exporter';
-        saveStatus.classList.add('unsaved');
+        setSaveStatus('Trop volumineux pour l\'autosave — pense à exporter', true);
+      } else if (saved === 'memory') {
+        setSaveStatus('Enregistré (session en cours uniquement)', true);
       } else {
-        saveStatus.textContent = 'Enregistré';
-        saveStatus.classList.remove('unsaved');
+        setSaveStatus('Enregistré', false);
       }
     }, delay);
   }
 
   docTitle.addEventListener('change', () => {
-    saveToLocalStorage(cmEditor.getValue(), docTitle.value);
+    persistDocument(cmEditor.getValue(), docTitle.value);
   });
 
   // ---------- Scroll sync éditeur <-> preview ----------
@@ -264,6 +268,7 @@
         }
 
         if (action === 'open') {
+          if (cmEditor.getValue() && !confirm('Ouvrir un autre fichier ? Le contenu actuel sera remplacé s\'il n\'est pas exporté.')) return;
           const { content, title } = await openMarkdownFile();
           cmEditor.setValue(content);
           docTitle.value = title;
@@ -279,22 +284,19 @@
 
         if (action === 'export-pdf') {
           await exportAsDesignedPdf(preview.innerHTML, docTitle.value, themeSelect.value, (status) => {
-            saveStatus.textContent = status || 'Enregistré';
-            saveStatus.classList.toggle('unsaved', !!status);
+            setSaveStatus(status || 'Enregistré', !!status);
           });
         }
 
         if (action === 'export-pdf-vector') {
           await exportAsVectorPdf(cmEditor.getValue(), docTitle.value, themeSelect.value, (status) => {
-            saveStatus.textContent = status || 'Enregistré';
-            saveStatus.classList.toggle('unsaved', !!status);
+            setSaveStatus(status || 'Enregistré', !!status);
           });
         }
 
         if (action === 'export-pdf-office') {
           await exportAsOfficePdf(cmEditor.getValue(), docTitle.value, (status) => {
-            saveStatus.textContent = status || 'Enregistré';
-            saveStatus.classList.toggle('unsaved', !!status);
+            setSaveStatus(status || 'Enregistré', !!status);
           });
         }
 
@@ -316,10 +318,28 @@
     });
   });
 
+  function loadDocumentIntoEditor(content, title) {
+    cmEditor.setValue(content);
+    docTitle.value = title;
+    cmEditor.focus();
+  }
+  window.mdEditor = {
+    loadDocument: loadDocumentIntoEditor,
+    getValue: () => cmEditor.getValue(),
+    getTitle: () => docTitle.value
+  };
+
   // ---------- Init ----------
-  function init() {
+  window.addEventListener('beforeunload', (e) => {
+    if (saveStatus.classList.contains('unsaved')) {
+      e.preventDefault();
+      e.returnValue = '';
+    }
+  });
+
+  async function init() {
     initTheme();
-    const { content, title } = loadFromLocalStorage();
+    const { content, title } = await restoreDocument();
     const initialContent = content || `# Bienvenue
 
 Commence à écrire en **markdown** ici, l'aperçu se met à jour en direct à droite.
@@ -350,9 +370,5 @@ console.log("bloc de code coloré");
     document.body.appendChild(banner);
   }
 
-  try {
-    init();
-  } catch (err) {
-    showFatalError(err);
-  }
+  init().catch(showFatalError);
 })();
