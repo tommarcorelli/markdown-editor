@@ -278,6 +278,20 @@
         }
 
         if (action === 'export-pdf') {
+          await exportAsDesignedPdf(preview.innerHTML, docTitle.value, themeSelect.value, (status) => {
+            saveStatus.textContent = status || 'Enregistré';
+            saveStatus.classList.toggle('unsaved', !!status);
+          });
+        }
+
+        if (action === 'export-pdf-vector') {
+          await exportAsVectorPdf(cmEditor.getValue(), docTitle.value, themeSelect.value, (status) => {
+            saveStatus.textContent = status || 'Enregistré';
+            saveStatus.classList.toggle('unsaved', !!status);
+          });
+        }
+
+        if (action === 'print-pdf') {
           exportAsPdf();
         }
 

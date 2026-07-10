@@ -46,7 +46,13 @@
 
   .doc-toc { break-after: page; }
 
+  .markdown-body {
+    orphans: 3;
+    widows: 3;
+  }
+
   @page {
+    size: A4;
     margin: 1.8cm 1.6cm;
   }
 }

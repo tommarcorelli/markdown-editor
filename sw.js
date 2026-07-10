@@ -1,5 +1,5 @@
 // sw.js — cache-first pour l'app shell, pour un fonctionnement 100% hors-ligne
-const CACHE_NAME = 'md-editor-v3';
+const CACHE_NAME = 'md-editor-v5';
 
 const APP_SHELL = [
   './',
@@ -43,6 +43,11 @@ const APP_SHELL = [
   './js/vendor/purify.min.js',
   './js/vendor/highlight.min.js',
   './js/vendor/codemirror.min.js',
+  './js/vendor/pdf-libs.min.js',
+  './js/export-pdf.js',
+  './js/vendor/pdfmake.min.js',
+  './js/vendor/vfs_fonts.js',
+  './js/export-pdf-vector.js',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-maskable-512.png',
