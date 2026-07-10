@@ -1,5 +1,5 @@
 // sw.js — cache-first pour l'app shell, pour un fonctionnement 100% hors-ligne
-const CACHE_NAME = 'md-editor-v10';
+const CACHE_NAME = 'md-editor-v12';
 
 const APP_SHELL = [
   './',
@@ -40,6 +40,7 @@ const APP_SHELL = [
   './js/export-slides.js',
   './js/editor-cm.js',
   './js/app.js',
+  './js/find-replace.js',
   './js/version-history.js',
   './js/vendor/markdown-it.min.js',
   './js/vendor/purify.min.js',

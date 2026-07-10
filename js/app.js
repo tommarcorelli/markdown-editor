@@ -40,6 +40,19 @@
     charCount.textContent = `${raw.length} caractères`;
   }
 
+  async function flushSave() {
+    renderPreview();
+    const saved = await persistDocument(cmEditor.getValue(), docTitle.value);
+    if (saved === 'quota-exceeded') {
+      setSaveStatus('Trop volumineux pour l\'autosave — pense à exporter', true);
+    } else if (saved === 'memory') {
+      setSaveStatus('Enregistré (session en cours uniquement)', true);
+    } else {
+      setSaveStatus('Enregistré', false);
+    }
+    return saved;
+  }
+
   function onEditorChange() {
     setSaveStatus('Modifications…', true);
     updateStats();
@@ -50,18 +63,24 @@
     // et le re-rendu, pour éviter les à-coups pendant la saisie.
     const delay = len > 200000 ? 500 : len > 50000 ? 300 : 150;
 
-    debounceTimer = setTimeout(async () => {
-      renderPreview();
-      const saved = await persistDocument(cmEditor.getValue(), docTitle.value);
-      if (saved === 'quota-exceeded') {
-        setSaveStatus('Trop volumineux pour l\'autosave — pense à exporter', true);
-      } else if (saved === 'memory') {
-        setSaveStatus('Enregistré (session en cours uniquement)', true);
-      } else {
-        setSaveStatus('Enregistré', false);
-      }
-    }, delay);
+    debounceTimer = setTimeout(flushSave, delay);
   }
+
+  // Ctrl/Cmd+S : force un enregistrement immédiat plutôt que d'attendre le
+  // debounce, avec un petit flash visuel pour confirmer que ça a été pris
+  // en compte (l'autosave silencieuse peut donner l'impression que rien ne
+  // s'est passé).
+  window.addEventListener('keydown', (e) => {
+    const mod = e.ctrlKey || e.metaKey;
+    if (mod && e.key.toLowerCase() === 's') {
+      e.preventDefault();
+      clearTimeout(debounceTimer);
+      flushSave().then(() => {
+        saveStatus.classList.add('save-flash');
+        setTimeout(() => saveStatus.classList.remove('save-flash'), 400);
+      });
+    }
+  });
 
   docTitle.addEventListener('change', () => {
     persistDocument(cmEditor.getValue(), docTitle.value);
@@ -337,8 +356,33 @@
   window.mdEditor = {
     loadDocument: loadDocumentIntoEditor,
     getValue: () => cmEditor.getValue(),
-    getTitle: () => docTitle.value
+    getTitle: () => docTitle.value,
+    findNext: (q, cs) => cmEditor.findNext(q, cs),
+    findPrev: (q, cs) => cmEditor.findPrev(q, cs),
+    replaceCurrent: (q, r, cs) => cmEditor.replaceCurrent(q, r, cs),
+    replaceAll: (q, r, cs) => cmEditor.replaceAll(q, r, cs),
+    matchInfo: (q, cs) => cmEditor.matchInfo(q, cs),
+    focus: () => cmEditor.focus()
   };
+
+  // ---------- Glisser-déposer un fichier .md/.txt pour l'ouvrir ----------
+  // Les images sont déjà gérées dans editor-cm.js (domEventHandlers.drop) et
+  // renvoient false pour les fichiers non-image, donc l'événement continue
+  // de remonter jusqu'ici sans interférence.
+  const TEXT_DROP_RE = /\.(md|markdown|txt)$/i;
+  editorMount.addEventListener('drop', async (e) => {
+    const file = Array.from(e.dataTransfer?.files || []).find((f) => TEXT_DROP_RE.test(f.name));
+    if (!file) return; // pas un fichier texte reconnu : on laisse le comportement existant (images, etc.)
+    e.preventDefault();
+    e.stopPropagation();
+    if (cmEditor.getValue() && !confirm(`Ouvrir "${file.name}" ? Le contenu actuel sera remplacé s'il n'est pas exporté.`)) return;
+    try {
+      const text = await file.text();
+      loadDocumentIntoEditor(text, file.name.replace(/\.[^.]+$/, ''));
+    } catch (err) {
+      alert(`Impossible de lire ce fichier : ${err.message || err}`);
+    }
+  });
 
   // ---------- Init ----------
   window.addEventListener('beforeunload', (e) => {

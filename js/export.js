@@ -15,7 +15,14 @@ function exportAsHtml(htmlContent, title, themeName) {
   // Le CSS est embarqué en JS (js/theme-styles.js) plutôt que récupéré via
   // fetch() : fetch() échoue silencieusement quand l'éditeur est ouvert en
   // file:// (double-clic), ce qui produisait un export sans aucun style.
-  const themeCss = THEME_CSS[themeName] || THEME_CSS.github;
+  const themeCss = (THEME_CSS[themeName] || THEME_CSS.github)
+    // Repli robuste hors-ligne : le <link> Google Fonts ne se chargera pas
+    // sans connexion, donc on ajoute de bonnes polices système AVANT le
+    // générique 'monospace'/'serif', plutôt que de dépendre uniquement du
+    // fallback générique du navigateur.
+    .replace(/'JetBrains Mono', monospace/g, "'JetBrains Mono', ui-monospace, 'SF Mono', 'Cascadia Code', Consolas, monospace")
+    .replace(/'Source Serif 4', Georgia, serif/g, "'Source Serif 4', Georgia, 'Iowan Old Style', 'Palatino Linotype', serif")
+    .replace(/'Source Serif 4', Georgia, 'Times New Roman', serif/g, "'Source Serif 4', Georgia, 'Iowan Old Style', 'Times New Roman', serif");
   const cardBg = THEME_BG[themeName] || '#ffffff';
   const bodyBg = THEME_BODY_BG[themeName] || '#f0f0f0';
   const accent = THEME_ACCENT[themeName] || '#5eead4';
@@ -37,6 +44,7 @@ function exportAsHtml(htmlContent, title, themeName) {
 <meta charset="UTF-8">
 <title>${escapeHtmlText(title)}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
 <style>
   html { background: ${bodyBg}; }

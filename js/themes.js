@@ -9,7 +9,12 @@ function applyTheme(themeName) {
 
 function initTheme() {
   const select = document.getElementById('theme-select');
-  const saved = safeGet(THEME_STORAGE_KEY) || 'github';
+  const stored = safeGet(THEME_STORAGE_KEY);
+  // Premier lancement (aucun choix explicite en mémoire) : on part du thème
+  // sombre/clair du système plutôt que d'imposer "github" à tout le monde.
+  // Un choix explicite ultérieur de l'utilisateur reste toujours prioritaire.
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const saved = stored || (prefersDark ? 'nuit' : 'github');
   select.value = saved;
   applyTheme(saved);
 

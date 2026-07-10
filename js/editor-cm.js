@@ -269,6 +269,85 @@ function createMarkdownEditor(mountEl, initialContent, onChangeCallback) {
   const undoCmd = CM.historyKeymap.find((k) => k.key === 'Mod-z');
   const redoCmd = CM.historyKeymap.find((k) => k.key === 'Mod-y');
 
+  // ---------- Recherche / remplacement ----------
+  // @codemirror/search n'est pas dans le bundle embarqué (js/vendor/codemirror.min.js
+  // n'exporte pas Decoration/highlightSelectionMatches) : on reconstruit une
+  // recherche minimale au-dessus des primitives disponibles (EditorSelection,
+  // view.dispatch). Le "surlignage" du match courant se fait via la sélection
+  // native (déjà stylée par le thème de l'éditeur), pas via des décorations.
+  function escapeRegExp(str) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  function findMatches(query, caseSensitive) {
+    if (!query) return [];
+    const text = view.state.doc.toString();
+    const re = new RegExp(escapeRegExp(query), caseSensitive ? 'g' : 'gi');
+    const matches = [];
+    let m;
+    while ((m = re.exec(text))) {
+      matches.push({ from: m.index, to: m.index + m[0].length });
+      if (m[0].length === 0) re.lastIndex++; // garde-fou, ne devrait pas arriver ici
+    }
+    return matches;
+  }
+
+  function selectMatch(match) {
+    view.dispatch({
+      selection: CM.EditorSelection.range(match.from, match.to),
+      scrollIntoView: true
+    });
+    view.focus();
+  }
+
+  function findNext(query, caseSensitive) {
+    const matches = findMatches(query, caseSensitive);
+    if (!matches.length) return { index: -1, total: 0 };
+    const pos = view.state.selection.main.to;
+    let next = matches.find((m) => m.from >= pos);
+    if (!next || (view.state.selection.main.from === next.from && view.state.selection.main.to === next.to)) {
+      next = matches.find((m) => m.from > view.state.selection.main.from) || matches[0];
+    }
+    if (!next) next = matches[0];
+    selectMatch(next);
+    return { index: matches.indexOf(next), total: matches.length };
+  }
+
+  function findPrev(query, caseSensitive) {
+    const matches = findMatches(query, caseSensitive);
+    if (!matches.length) return { index: -1, total: 0 };
+    const pos = view.state.selection.main.from;
+    let prevMatches = matches.filter((m) => m.to <= pos);
+    const prev = prevMatches.length ? prevMatches[prevMatches.length - 1] : matches[matches.length - 1];
+    selectMatch(prev);
+    return { index: matches.indexOf(prev), total: matches.length };
+  }
+
+  function matchInfo(query, caseSensitive) {
+    const matches = findMatches(query, caseSensitive);
+    const sel = view.state.selection.main;
+    const idx = matches.findIndex((m) => m.from === sel.from && m.to === sel.to);
+    return { index: idx, total: matches.length };
+  }
+
+  function replaceCurrent(query, replacement, caseSensitive) {
+    const sel = view.state.selection.main;
+    const current = view.state.sliceDoc(sel.from, sel.to);
+    const matchesCurrent = caseSensitive ? current === query : current.toLowerCase() === query.toLowerCase();
+    if (matchesCurrent && current) {
+      view.dispatch({ changes: { from: sel.from, to: sel.to, insert: replacement } });
+    }
+    return findNext(query, caseSensitive);
+  }
+
+  function replaceAll(query, replacement, caseSensitive) {
+    const matches = findMatches(query, caseSensitive);
+    if (!matches.length) return 0;
+    const changes = matches.map((m) => ({ from: m.from, to: m.to, insert: replacement }));
+    view.dispatch({ changes });
+    return matches.length;
+  }
+
   return {
     getValue: () => view.state.doc.toString(),
     setValue: (text) => {
@@ -280,10 +359,16 @@ function createMarkdownEditor(mountEl, initialContent, onChangeCallback) {
     redo: () => redoCmd && redoCmd.run(view),
     focus: () => view.focus(),
     getView: () => view,
+    findNext,
+    findPrev,
+    replaceCurrent,
+    replaceAll,
+    matchInfo,
     wrapSelection,
     toggleLinePrefix,
     setHeadingLevel,
     insertText,
+
     insertTable,
     triggerImagePicker
   };

@@ -69,6 +69,9 @@
     { icon: '▤', label: 'Exporter en présentation', run: () => fileAction('export-slides') },
     { icon: '🖶', label: 'Imprimer (PDF navigateur)', run: () => fileAction('print-pdf') },
     { icon: '⟲', label: 'Réinitialiser (efface tout, historique inclus)', run: () => fileAction('reset-all') },
+    { icon: '🔎', label: 'Rechercher…', run: () => { if (window.openFindReplace) window.openFindReplace(false); } },
+    { icon: '🔁', label: 'Rechercher et remplacer…', run: () => { if (window.openFindReplace) window.openFindReplace(true); } },
+    { icon: '◱', label: 'Mode focus (masquer l\'interface)', run: () => toggleFocus() },
   ];
 
   function trigger(cmd) {
