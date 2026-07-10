@@ -47,6 +47,7 @@
         <option value="sepia">Sépia</option>
         <option value="corail">Corail</option>
         <option value="rose">Rosé</option>
+        <option value="vermillon">Vermillon</option>
         <option value="lavande">Lavande</option>
         <option value="solarized">Solarized</option>
         <option value="nord">Nord</option>
@@ -61,7 +62,6 @@
         <option value="neobrutalist">Néobrutalist</option>
         <option value="cyberpunk">Cyberpunk</option>
       </select>
-      <svg class="select-arrow" viewBox="0 0 10 6" width="10" height="6"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>
     </div>
 
     <div class="menu" id="options-menu">
@@ -93,8 +93,9 @@
         <button data-action="export-html"><span class="mi">↓</span>Exporter en HTML</button>
         <button data-action="export-pdf"><span class="mi">↓</span>Exporter en PDF (fidèle au thème)</button>
         <button data-action="export-pdf-vector"><span class="mi">↓</span>Exporter en PDF (texte sélectionnable)</button>
+        <button data-action="export-pdf-office"><span class="mi">↓</span>Exporter en PDF (style Word)</button>
         <button data-action="print-pdf"><span class="mi">🖶</span>Imprimer (PDF navigateur)</button>
-        <div class="menu-hint">"Fidèle au thème" = image, rendu exact. "Texte sélectionnable" = vectoriel léger, palette simplifiée.</div>
+        <div class="menu-hint">"Fidèle au thème" = image. "Texte sélectionnable" = vectoriel, couleurs du thème. "Style Word" = vectoriel, mise en page administrative classique.</div>
         <button data-action="export-slides"><span class="mi">▤</span>Exporter en présentation</button>
       </div>
     </div>
@@ -149,6 +150,10 @@
 <script src="js/vendor/pdf-libs.min.js"></script>
 <script src="js/vendor/pdfmake.min.js"></script>
 <script src="js/vendor/vfs_fonts.js"></script>
+<script src="js/vendor/mermaid.min.js"></script>
+<script src="js/vendor/html-docx.min.js"></script>
+<script src="js/vendor/jszip.min.js"></script>
+<script src="js/vendor/markdown-it-footnote.min.js"></script>
 <link rel="stylesheet" href="css/vendor/atom-one-dark.min.css">
 
 <!-- App -->
@@ -163,6 +168,8 @@
 <script src="js/export-slides.js"></script>
 <script src="js/editor-cm.js"></script>
 <script src="js/app.js"></script>
+<script src="js/custom-select.js"></script>
+<script src="js/enhancements.js"></script>
 
 <script>
   // PWA : les service workers exigent https:// ou localhost — ça échoue

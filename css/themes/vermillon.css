@@ -1,0 +1,206 @@
+/* Vermillon — thème document éditorial : ivoire chaud + encre + accent vermillon.
+   Cohérent avec la refonte de l'interface "Atelier Éditorial". */
+
+.markdown-body {
+  font-family: 'Fraunces', 'Source Serif 4', Georgia, serif;
+  font-variation-settings: "opsz" 24;
+  font-size: 17.5px;
+  line-height: 1.78;
+  color: #16130f;
+  background: #f4efe4;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 8px 0 24px;
+}
+
+.markdown-body h1, .markdown-body h2, .markdown-body h3,
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  font-family: 'Fraunces', Georgia, serif;
+  color: #16130f;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.markdown-body h1 {
+  font-size: 2.4em;
+  font-weight: 700;
+  font-variation-settings: "opsz" 144;
+  margin-top: 0.4em;
+  margin-bottom: 0.4em;
+  padding-bottom: 0.25em;
+  border-bottom: 3px solid #16130f;
+  position: relative;
+}
+.markdown-body h1::before {
+  content: '';
+  position: absolute;
+  left: -18px;
+  top: 0.2em;
+  width: 6px;
+  height: 0.9em;
+  background: #d43815;
+}
+
+.markdown-body h2 {
+  font-size: 1.55em;
+  font-weight: 600;
+  margin-top: 1.8em;
+  margin-bottom: 0.5em;
+  color: #d43815;
+  font-variation-settings: "opsz" 60;
+}
+.markdown-body h3 {
+  font-size: 1.2em;
+  font-weight: 600;
+  margin-top: 1.4em;
+  margin-bottom: 0.4em;
+  font-style: italic;
+  font-variation-settings: "opsz" 24;
+}
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  font-size: 1.05em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-family: 'IBM Plex Mono', monospace;
+  color: #3a342c;
+  margin-top: 1.3em;
+}
+
+.markdown-body p { margin: 0.9em 0; }
+
+.markdown-body a {
+  color: #a52a0e;
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(212, 56, 21, 0.5);
+  transition: text-decoration-color 0.15s;
+}
+.markdown-body a:hover { text-decoration-color: #d43815; }
+
+.markdown-body strong { color: #16130f; font-weight: 700; }
+.markdown-body em { color: #3a342c; }
+
+.markdown-body code {
+  font-family: 'IBM Plex Mono', 'JetBrains Mono', monospace;
+  font-size: 0.85em;
+  background: #ebe4d3;
+  color: #a52a0e;
+  padding: 0.12em 0.42em;
+  border-radius: 2px;
+  border: 1px solid #d9cfb5;
+}
+
+.markdown-body pre {
+  background: #16130f;
+  color: #f4efe4;
+  padding: 18px 22px;
+  overflow-x: auto;
+  border-left: 4px solid #d43815;
+  border-radius: 0;
+  margin: 1.4em 0;
+  box-shadow: 4px 4px 0 rgba(22, 19, 15, 0.15);
+}
+.markdown-body pre code {
+  background: transparent;
+  color: #f4efe4;
+  padding: 0;
+  border: none;
+  font-size: 0.88em;
+  line-height: 1.65;
+}
+
+.markdown-body blockquote {
+  border-left: 4px solid #d43815;
+  margin: 1.5em 0;
+  padding: 0.4em 0 0.4em 1.4em;
+  color: #3a342c;
+  font-style: italic;
+  font-size: 1.05em;
+  font-variation-settings: "opsz" 60;
+  background: rgba(212, 56, 21, 0.05);
+  padding-right: 1em;
+}
+
+.markdown-body ul, .markdown-body ol { padding-left: 1.5em; margin: 0.9em 0; }
+.markdown-body li { margin: 0.35em 0; }
+.markdown-body ul li::marker { color: #d43815; }
+.markdown-body ol li::marker { color: #d43815; font-weight: 700; font-family: 'IBM Plex Mono', monospace; }
+
+.markdown-body table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1.6em 0;
+  font-size: 0.95em;
+}
+.markdown-body th, .markdown-body td {
+  border: 1.5px solid #16130f;
+  padding: 9px 14px;
+  text-align: left;
+}
+.markdown-body th {
+  background: #16130f;
+  color: #f4efe4;
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.82em;
+  letter-spacing: 0.05em;
+}
+.markdown-body tr:nth-child(even) td { background: #ebe4d3; }
+
+.markdown-body img {
+  max-width: 100%;
+  border: 1.5px solid #16130f;
+  box-shadow: 5px 5px 0 rgba(22, 19, 15, 0.15);
+  margin: 1em 0;
+}
+
+.markdown-body hr {
+  border: none;
+  height: 3px;
+  background: #16130f;
+  margin: 2.6em 0;
+  position: relative;
+}
+.markdown-body hr::after {
+  content: '§';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: #f4efe4;
+  color: #d43815;
+  padding: 0 12px;
+  font-family: 'Fraunces', serif;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.markdown-body kbd {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.82em;
+  background: #ebe4d3;
+  color: #16130f;
+  border: 1.5px solid #16130f;
+  padding: 0.1em 0.5em;
+  border-radius: 2px;
+  box-shadow: 2px 2px 0 #16130f;
+}
+
+/* Numérotation & sommaire (utilisent les classes de _base.css) */
+.markdown-body .doc-toc {
+  border: 1.5px solid #16130f;
+  border-left: 6px solid #d43815;
+  background: #ebe4d3;
+  border-radius: 0;
+  box-shadow: 4px 4px 0 #16130f;
+}
+.markdown-body .doc-toc-title {
+  color: #d43815;
+  font-family: 'IBM Plex Mono', monospace;
+}
+.markdown-body .doc-toc a { color: #16130f; }
+.markdown-body .doc-toc a:hover { color: #d43815; }
+.markdown-body .heading-num { color: #d43815; }

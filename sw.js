@@ -1,5 +1,5 @@
 // sw.js — cache-first pour l'app shell, pour un fonctionnement 100% hors-ligne
-const CACHE_NAME = 'md-editor-v5';
+const CACHE_NAME = 'md-editor-v7';
 
 const APP_SHELL = [
   './',
@@ -51,6 +51,13 @@ const APP_SHELL = [
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-maskable-512.png',
+  './js/custom-select.js',
+  './js/enhancements.js',
+  './js/vendor/mermaid.min.js',
+  './js/vendor/html-docx.min.js',
+  './js/vendor/jszip.min.js',
+  './js/vendor/markdown-it-footnote.min.js',
+  './css/themes/vermillon.css',
   './icons/favicon-32.png'
 ];
 

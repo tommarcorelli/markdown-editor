@@ -291,6 +291,76 @@ function tokensToPdfContent(tokens, palette) {
   return content;
 }
 
+// ---------- Palette "Style Word/Office" — fixe, indépendante du thème actif ----------
+function getOfficePalette() {
+  return {
+    accent: '#2e5395',   // bleu Word classique
+    bg: '#ffffff',
+    text: '#1a1a1a',
+    muted: '#595959',
+    codeBg: '#f2f2f2',
+    isDark: false
+  };
+}
+
+async function exportAsOfficePdf(source, title, onStatusChange) {
+  onStatusChange?.('Analyse du document…');
+  const palette = getOfficePalette();
+
+  const tokens = md.parse(source, {});
+  numberHeadingTokens(tokens);
+  const tocEntries = collectToc(tokens);
+  const body = tokensToPdfContent(tokens, palette);
+
+  const tocContent = tocEntries.length >= 2 ? [
+    { text: 'Sommaire', fontSize: 13, bold: true, color: palette.accent, margin: [0, 0, 0, 8] },
+    ...tocEntries.map((e) => ({
+      text: e.text,
+      fontSize: 9.5 + (4 - e.level),
+      color: palette.muted,
+      margin: [(e.level - 2) * 14, 1, 0, 1]
+    })),
+    { text: '', pageBreak: 'after' }
+  ] : [];
+
+  onStatusChange?.('Génération du PDF…');
+
+  const docDefinition = {
+    pageSize: 'A4',
+    pageMargins: [70, 70, 70, 60], // marges larges, classiques d'un document Word/administratif
+    header: (currentPage) => currentPage === 1 ? null : {
+      text: title || 'document',
+      fontSize: 8,
+      color: palette.muted,
+      alignment: 'right',
+      margin: [0, 24, 70, 0]
+    },
+    footer: (currentPage, pageCount) => ({
+      text: `Page ${currentPage} sur ${pageCount}`,
+      fontSize: 8.5,
+      color: palette.muted,
+      alignment: 'center',
+      margin: [0, 0, 0, 0]
+    }),
+    content: [
+      { text: title || 'Document', fontSize: 22, bold: true, color: palette.accent, alignment: 'center', margin: [0, 0, 0, 2] },
+      { text: new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }), fontSize: 9.5, color: palette.muted, alignment: 'center', margin: [0, 0, 0, 24] },
+      ...tocContent,
+      ...body
+    ],
+    defaultStyle: {
+      font: 'Roboto',
+      color: palette.text
+    }
+  };
+
+  try {
+    window.pdfMake.createPdf(docDefinition).download(`${title || 'document'}.pdf`);
+  } finally {
+    onStatusChange?.(null);
+  }
+}
+
 async function exportAsVectorPdf(source, title, themeName, onStatusChange) {
   onStatusChange?.('Analyse du document…');
   const palette = getThemePalette(themeName);

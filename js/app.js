@@ -291,6 +291,13 @@
           });
         }
 
+        if (action === 'export-pdf-office') {
+          await exportAsOfficePdf(cmEditor.getValue(), docTitle.value, (status) => {
+            saveStatus.textContent = status || 'Enregistré';
+            saveStatus.classList.toggle('unsaved', !!status);
+          });
+        }
+
         if (action === 'print-pdf') {
           exportAsPdf();
         }
