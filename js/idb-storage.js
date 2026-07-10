@@ -169,6 +169,105 @@ async function idbGetVersion(id) {
   });
 }
 
+async function idbDeleteVersion(id) {
+  const db = await openDb();
+  if (!db) return false;
+  return new Promise((resolve) => {
+    try {
+      const t = tx(db, ['versions'], 'readwrite');
+      t.objectStore('versions').delete(id);
+      t.oncomplete = () => resolve(true);
+      t.onerror = () => resolve(false);
+    } catch (e) {
+      resolve(false);
+    }
+  });
+}
+
+async function idbClearVersions() {
+  const db = await openDb();
+  if (!db) return false;
+  return new Promise((resolve) => {
+    try {
+      const t = tx(db, ['versions'], 'readwrite');
+      t.objectStore('versions').clear();
+      t.oncomplete = () => resolve(true);
+      t.onerror = () => resolve(false);
+    } catch (e) {
+      resolve(false);
+    }
+  });
+}
+
+// Réinitialisation complète : document courant + tout l'historique, dans
+// IndexedDB comme dans le repli localStorage. Utilisé par "Réinitialiser
+// l'application" (Options) — volontairement séparé d'un simple "Nouveau
+// document", qui lui ne touche pas à l'historique.
+async function idbClearDoc() {
+  const db = await openDb();
+  if (!db) return false;
+  return new Promise((resolve) => {
+    try {
+      const t = tx(db, ['doc'], 'readwrite');
+      t.objectStore('doc').clear();
+      t.oncomplete = () => resolve(true);
+      t.onerror = () => resolve(false);
+    } catch (e) {
+      resolve(false);
+    }
+  });
+}
+
+async function resetAllStoredData() {
+  await Promise.all([idbClearDoc(), idbClearVersions()]);
+  clearLocalDraft(); // définie dans storage.js : purge localStorage (contenu, titre, préférences)
+}
+
+async function idbDeleteVersion(id) {
+  const db = await openDb();
+  if (!db) return false;
+  return new Promise((resolve) => {
+    try {
+      const t = tx(db, ['versions'], 'readwrite');
+      t.objectStore('versions').delete(id);
+      t.oncomplete = () => resolve(true);
+      t.onerror = () => resolve(false);
+    } catch (e) {
+      resolve(false);
+    }
+  });
+}
+
+async function idbClearVersions() {
+  const db = await openDb();
+  if (!db) return false;
+  return new Promise((resolve) => {
+    try {
+      const t = tx(db, ['versions'], 'readwrite');
+      t.objectStore('versions').clear();
+      t.oncomplete = () => resolve(true);
+      t.onerror = () => resolve(false);
+    } catch (e) {
+      resolve(false);
+    }
+  });
+}
+
+async function idbClearDoc() {
+  const db = await openDb();
+  if (!db) return false;
+  return new Promise((resolve) => {
+    try {
+      const t = tx(db, ['doc'], 'readwrite');
+      t.objectStore('doc').delete('current');
+      t.oncomplete = () => resolve(true);
+      t.onerror = () => resolve(false);
+    } catch (e) {
+      resolve(false);
+    }
+  });
+}
+
 // ---------- Orchestration avec repli localStorage (storage.js) ----------
 
 let idbUsable = null; // mémoïsé après le 1er essai
@@ -201,4 +300,14 @@ async function restoreDocument() {
     return { content: '', title: 'sans-titre' };
   }
   return loadFromLocalStorage();
+}
+
+// Réinitialisation complète : document courant + tout l'historique de
+// versions + le repli localStorage. Utilisé par "Réinitialiser" dans le
+// menu Fichier — différent de "Nouveau", qui ne vide que l'éditeur et
+// laisse l'historique intact.
+async function resetAllStorage() {
+  lastVersionAt = 0;
+  await Promise.all([idbClearDoc(), idbClearVersions()]);
+  clearLocalDocument(); // définie dans storage.js
 }

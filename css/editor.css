@@ -376,6 +376,10 @@ body {
 }
 .menu-list button:hover { background: var(--bg-hover); color: var(--accent); }
 .menu-list button:hover .mi { color: var(--accent); }
+.menu-danger { color: #d3a441; }
+.menu-danger .mi { color: #d3a441; }
+.menu-danger:hover { background: rgba(211, 164, 65, 0.14); color: #e0b955; }
+.menu-danger:hover .mi { color: #e0b955; }
 
 .menu-sep { height: 1px; background: var(--border); margin: 5px 4px; }
 .mi {
@@ -687,6 +691,32 @@ body.focus-mode .pane {
   transition: border-color 0.12s, color 0.12s;
 }
 .vh-restore:hover { border-color: var(--accent); color: var(--accent); }
+.vh-header-actions { display: flex; align-items: center; gap: 6px; }
+.vh-clear-all {
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  color: var(--text-faint);
+  font-family: var(--font-ui);
+  font-size: 10.5px;
+  font-weight: 500;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color 0.12s, color 0.12s;
+}
+.vh-clear-all:hover { border-color: #d3a441; color: #d3a441; }
+.vh-item-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.vh-delete {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-faint);
+  font-size: 12px;
+  padding: 5px 7px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color 0.12s, color 0.12s;
+}
+.vh-delete:hover { border-color: var(--accent); color: var(--accent); }
 .vh-empty { padding: 24px 20px; text-align: center; color: var(--text-faint); font-size: 13px; line-height: 1.5; }
 
 /* ---------- RESPONSIVE ---------- */

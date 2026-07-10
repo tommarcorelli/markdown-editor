@@ -7,7 +7,10 @@
   overlay.innerHTML = `<div class="cmd-modal vh-modal" role="dialog" aria-modal="true" aria-label="Historique des versions">
     <div class="vh-header">
       <span>Historique des versions</span>
-      <button type="button" class="vh-close" aria-label="Fermer">✕</button>
+      <div class="vh-header-actions">
+        <button type="button" class="vh-clear-all">Vider l'historique</button>
+        <button type="button" class="vh-close" aria-label="Fermer">✕</button>
+      </div>
     </div>
     <div class="vh-list"></div>
   </div>`;
@@ -15,6 +18,7 @@
 
   const list = overlay.querySelector('.vh-list');
   const closeBtn = overlay.querySelector('.vh-close');
+  const clearAllBtn = overlay.querySelector('.vh-clear-all');
   let lastFocused = null;
 
   function relativeTime(ts) {
@@ -48,7 +52,10 @@
           <span class="vh-item-title">${escapeHtml(v.title || 'sans-titre')}</span>
           <span class="vh-item-meta">${relativeTime(v.ts)} · ${formatAbsolute(v.ts)} · ${v.words} mot${v.words > 1 ? 's' : ''}</span>
         </div>
-        <button type="button" class="vh-restore" data-id="${v.id}">Restaurer</button>
+        <div class="vh-item-actions">
+          <button type="button" class="vh-restore" data-id="${v.id}">Restaurer</button>
+          <button type="button" class="vh-delete" data-id="${v.id}" aria-label="Supprimer cet instantané" title="Supprimer cet instantané">🗑</button>
+        </div>
       </div>
     `).join('');
   }
@@ -76,6 +83,14 @@
   overlay.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
 
   list.addEventListener('click', async (e) => {
+    const deleteBtn = e.target.closest('.vh-delete');
+    if (deleteBtn) {
+      const id = parseInt(deleteBtn.dataset.id, 10);
+      if (!confirm('Supprimer cet instantané ? Cette action est définitive.')) return;
+      await idbDeleteVersion(id);
+      renderList();
+      return;
+    }
     const btn = e.target.closest('.vh-restore');
     if (!btn) return;
     const id = parseInt(btn.dataset.id, 10);
@@ -88,6 +103,12 @@
     if (typeof idbAddVersion === 'function' && currentValue) idbAddVersion(currentValue, currentTitle, true);
     if (window.mdEditor) window.mdEditor.loadDocument(version.content, version.title || 'sans-titre');
     close();
+  });
+
+  clearAllBtn.addEventListener('click', async () => {
+    if (!confirm('Vider tout l\'historique de versions ? Cette action est définitive et ne touche pas au document courant.')) return;
+    await idbClearVersions();
+    renderList();
   });
 
   const historyBtn = document.getElementById('version-history-btn');

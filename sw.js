@@ -1,5 +1,5 @@
 // sw.js — cache-first pour l'app shell, pour un fonctionnement 100% hors-ligne
-const CACHE_NAME = 'md-editor-v9';
+const CACHE_NAME = 'md-editor-v10';
 
 const APP_SHELL = [
   './',

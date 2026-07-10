@@ -266,6 +266,9 @@ function createMarkdownEditor(mountEl, initialContent, onChangeCallback) {
     input.click();
   }
 
+  const undoCmd = CM.historyKeymap.find((k) => k.key === 'Mod-z');
+  const redoCmd = CM.historyKeymap.find((k) => k.key === 'Mod-y');
+
   return {
     getValue: () => view.state.doc.toString(),
     setValue: (text) => {
@@ -273,6 +276,8 @@ function createMarkdownEditor(mountEl, initialContent, onChangeCallback) {
         changes: { from: 0, to: view.state.doc.length, insert: text }
       });
     },
+    undo: () => undoCmd && undoCmd.run(view),
+    redo: () => redoCmd && redoCmd.run(view),
     focus: () => view.focus(),
     getView: () => view,
     wrapSelection,

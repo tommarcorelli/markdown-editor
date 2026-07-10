@@ -68,6 +68,7 @@
     { icon: '📖', label: 'Exporter en EPUB', run: () => exportEpub() },
     { icon: '▤', label: 'Exporter en présentation', run: () => fileAction('export-slides') },
     { icon: '🖶', label: 'Imprimer (PDF navigateur)', run: () => fileAction('print-pdf') },
+    { icon: '⟲', label: 'Réinitialiser (efface tout, historique inclus)', run: () => fileAction('reset-all') },
   ];
 
   function trigger(cmd) {

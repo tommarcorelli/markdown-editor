@@ -82,6 +82,8 @@
           <input type="checkbox" id="toggle-numbering">
           <span>Numéroter les sections</span>
         </label>
+        <div class="menu-sep"></div>
+        <button id="reset-app-btn" class="menu-danger"><span class="mi">⟲</span>Réinitialiser l'application…</button>
       </div>
     </div>
 
@@ -105,12 +107,17 @@
         <button data-action="print-pdf"><span class="mi">🖶</span>Imprimer (PDF navigateur)</button>
         <div class="menu-hint">"Fidèle au thème" = image. "Texte sélectionnable" = vectoriel, couleurs du thème. "Style Word" = vectoriel, mise en page administrative classique.</div>
         <button data-action="export-slides"><span class="mi">▤</span>Exporter en présentation</button>
+        <div class="menu-sep"></div>
+        <button data-action="reset-all" class="menu-danger"><span class="mi">⟲</span>Réinitialiser (efface tout, historique inclus)</button>
       </div>
     </div>
   </div>
 </header>
 
 <div class="toolbar" id="toolbar">
+  <button data-cmd="undo" title="Annuler (Ctrl+Z)"><svg viewBox="0 0 16 16" width="14" height="14"><path d="M4 4.5H10.5a3.5 3.5 0 010 7H6.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M6.5 2L4 4.5 6.5 7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  <button data-cmd="redo" title="Rétablir (Ctrl+Maj+Z)"><svg viewBox="0 0 16 16" width="14" height="14"><path d="M12 4.5H5.5a3.5 3.5 0 000 7H9.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.5 2L12 4.5 9.5 7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  <span class="toolbar-sep"></span>
   <button data-cmd="bold" title="Gras (Ctrl+B)"><svg viewBox="0 0 16 16" width="14" height="14"><path d="M4 2h4.5a2.5 2.5 0 010 5H4V2zM4 7h5a2.5 2.5 0 010 5H4V7z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></button>
   <button data-cmd="italic" title="Italique (Ctrl+I)"><svg viewBox="0 0 16 16" width="14" height="14"><path d="M7 2h5M4 14h5M9.5 2L6.5 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
   <button data-cmd="strike" title="Barré"><svg viewBox="0 0 16 16" width="14" height="14"><path d="M4 8h8M6 4.5c0-1 1-2 2-2s2.5.7 2.5 2M6 11.5c0 1 1.2 2 2.3 2s2.2-.8 2.2-2" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></button>

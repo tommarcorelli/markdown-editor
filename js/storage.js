@@ -45,6 +45,14 @@ function loadFromLocalStorage() {
   };
 }
 
+function clearLocalDocument() {
+  if (localStorageAvailable) {
+    try { localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(STORAGE_TITLE_KEY); } catch (e) {}
+  }
+  delete memoryFallback[STORAGE_KEY];
+  delete memoryFallback[STORAGE_TITLE_KEY];
+}
+
 // Ouverture d'un fichier .md depuis le disque
 function openMarkdownFile() {
   return new Promise((resolve, reject) => {

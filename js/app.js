@@ -148,6 +148,8 @@
 
   // ---------- Barre d'outils de formatage ----------
   const toolbarActions = {
+    undo: () => cmEditor.undo(),
+    redo: () => cmEditor.redo(),
     bold: () => cmEditor.wrapSelection('**', '**', 'texte en gras'),
     italic: () => cmEditor.wrapSelection('*', '*', 'texte en italique'),
     strike: () => cmEditor.wrapSelection('~~', '~~', 'texte barré'),
@@ -265,6 +267,15 @@
           if (cmEditor.getValue() && !confirm('Créer un nouveau document ? Le contenu actuel sera perdu s\'il n\'est pas exporté.')) return;
           cmEditor.setValue('');
           docTitle.value = 'sans-titre';
+        }
+
+        if (action === 'reset-all') {
+          if (!confirm('Réinitialiser l\'application ? Ceci efface le document courant ET tout l\'historique de versions, sans retour possible.')) return;
+          if (!confirm('Dernière confirmation : tout sera effacé définitivement. Continuer ?')) return;
+          await resetAllStorage();
+          cmEditor.setValue('');
+          docTitle.value = 'sans-titre';
+          setSaveStatus('Enregistré', false);
         }
 
         if (action === 'open') {
