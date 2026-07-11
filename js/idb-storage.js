@@ -406,6 +406,13 @@ async function duplicateDocument(id) {
   return idbCreateDocument((doc.title || 'sans-titre') + ' (copie)', doc.content);
 }
 
+async function renameDocumentRecord(id, title) {
+  if (!idbUsable) return false;
+  const doc = await idbGetDocument(id);
+  if (!doc) return false;
+  return idbSaveDocumentRecord(id, doc.content, title);
+}
+
 // Réinitialisation complète : tous les documents, tout l'historique, le
 // document actif, et le repli localStorage. Utilisé par "Réinitialiser"
 // dans le menu Fichier — volontairement destructeur et global, à la

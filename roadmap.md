@@ -25,14 +25,15 @@ Suivi des pistes d'amélioration discutées, classées par état.
 - **Indicateur hors-ligne** : petit badge ambre "Hors ligne" dans la barre du haut, basé sur `navigator.onLine` + les événements `online`/`offline`.
 - **Bouton d'installation PWA explicite** : capte `beforeinstallprompt`, affiche un bouton "Installer" dans la barre du haut plutôt que de compter sur la mini-infobar cachée du navigateur.
 - **`README.md` remis à jour** : sa propre section roadmap listait comme "non fait" plusieurs choses déjà implémentées (Mermaid, export DOCX/EPUB) — corrigé, et les vrais points restants y sont maintenant à jour.
+- **Coloration syntaxique de l'éditeur découplée du thème d'aperçu** : 4 palettes au choix (Encre/Minimal/Solaire/Forge) dans le menu Options, pilotées par des variables CSS (`--syn-*`) plutôt que des couleurs codées en dur dans `editor-cm.js`. Persisté et appliqué au chargement.
+- **Correcteur orthographique** : toggle dans le menu Options (`spellcheck` était désactivé par défaut, comportement natif de CodeMirror 6).
+- **Renommage depuis "Mes documents"** : bouton ✏️ par document, édition du titre en ligne (Entrée valide, Échap annule), sans avoir besoin d'ouvrir le document.
+- **Bug corrigé — bouton mort** : le menu Options avait un bouton "Réinitialiser l'application…" jamais branché à aucun code JS (probablement un reliquat d'une itération précédente). Retiré ; le "Réinitialiser" du menu Fichier (fonctionnel, testé) couvre déjà ce besoin.
 
-## 💡 Proposé, pas encore fait
+## 💡 Proposé, pas encore fait — et pourquoi
 
-- **Coloration syntaxique de l'éditeur découplée du thème de rendu** : actuellement liée à une palette fixe ("encre"), indépendante du thème de prévisualisation choisi.
-- **Correcteur orthographique** : `spellcheck` est désactivé par défaut sur l'éditeur CodeMirror (comportement natif de CM6) ; un simple toggle dans le menu Options suffirait.
-- **Renommage de document depuis le panneau "Mes documents"** : aujourd'hui il faut ouvrir le document puis éditer le champ titre dans la barre du haut.
-- **Polices custom dans le PDF vectoriel** : actuellement Roboto uniquement (pdfmake), faute de fichiers de police Times/Calibri embarqués dans son VFS.
-- **Éditeur de thème visuel** (color picker en direct) et **import/export de thème custom** : plus gros chantiers côté design.
+- **Polices custom dans le PDF vectoriel** : bloqué dans cet environnement précisément — embarquer une police dans pdfmake nécessite ses fichiers binaires (TTF/OTF), donc un accès réseau pour les télécharger, indisponible ici.
+- **Éditeur de thème visuel (color picker en direct) + import/export de thème custom** : volontairement pas fait cette fois. C'est un vrai chantier à part entière (interface de color picker, mapping de chaque variable vers un aperçu live, gestion de la validation/export d'un format de thème) plutôt qu'une amélioration ponctuelle — mérite sa propre session de travail dédiée plutôt qu'être casé à la fin de celle-ci.
 
 ## Notes techniques
 

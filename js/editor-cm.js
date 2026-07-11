@@ -2,23 +2,26 @@
 // (formatage, raccourcis, listes intelligentes, images collées/déposées).
 const CM = window.CMBundle;
 
-// Palette de coloration syntaxique markdown, calée sur les couleurs du thème "encre"
+// Palette de coloration syntaxique markdown. Pilotée par des variables CSS
+// (--syn-*, définies dans css/editor.css) plutôt que des couleurs figées :
+// ça permet de proposer plusieurs palettes de coloration d'éditeur,
+// indépendantes du thème d'aperçu du document (menu Options).
 const markdownHighlight = CM.HighlightStyle.define([
-  { tag: CM.tags.heading1, color: '#5eead4', fontWeight: '700', fontSize: '1.25em' },
-  { tag: CM.tags.heading2, color: '#5eead4', fontWeight: '700', fontSize: '1.15em' },
-  { tag: CM.tags.heading3, color: '#5eead4', fontWeight: '700', fontSize: '1.05em' },
-  { tag: [CM.tags.heading4, CM.tags.heading5, CM.tags.heading6], color: '#5eead4', fontWeight: '700' },
-  { tag: CM.tags.strong, color: '#f5f3ee', fontWeight: '700' },
-  { tag: CM.tags.emphasis, color: '#f5f3ee', fontStyle: 'italic' },
-  { tag: CM.tags.strikethrough, color: '#8b8f9a', textDecoration: 'line-through' },
-  { tag: CM.tags.link, color: '#7dd3fc', textDecoration: 'underline' },
-  { tag: CM.tags.url, color: '#7dd3fc' },
-  { tag: CM.tags.monospace, color: '#ffb86b', fontFamily: 'var(--font-mono)' },
-  { tag: CM.tags.quote, color: '#8b8f9a', fontStyle: 'italic' },
-  { tag: CM.tags.list, color: '#5eead4' },
-  { tag: CM.tags.processingInstruction, color: '#6b7280' },
-  { tag: CM.tags.contentSeparator, color: '#5eead4' },
-  { tag: CM.tags.meta, color: '#6b7280' }
+  { tag: CM.tags.heading1, color: 'var(--syn-heading)', fontWeight: '700', fontSize: '1.25em' },
+  { tag: CM.tags.heading2, color: 'var(--syn-heading)', fontWeight: '700', fontSize: '1.15em' },
+  { tag: CM.tags.heading3, color: 'var(--syn-heading)', fontWeight: '700', fontSize: '1.05em' },
+  { tag: [CM.tags.heading4, CM.tags.heading5, CM.tags.heading6], color: 'var(--syn-heading)', fontWeight: '700' },
+  { tag: CM.tags.strong, color: 'var(--syn-strong)', fontWeight: '700' },
+  { tag: CM.tags.emphasis, color: 'var(--syn-em)', fontStyle: 'italic' },
+  { tag: CM.tags.strikethrough, color: 'var(--syn-strike)', textDecoration: 'line-through' },
+  { tag: CM.tags.link, color: 'var(--syn-link)', textDecoration: 'underline' },
+  { tag: CM.tags.url, color: 'var(--syn-link)' },
+  { tag: CM.tags.monospace, color: 'var(--syn-code)', fontFamily: 'var(--font-mono)' },
+  { tag: CM.tags.quote, color: 'var(--syn-quote)', fontStyle: 'italic' },
+  { tag: CM.tags.list, color: 'var(--syn-list)' },
+  { tag: CM.tags.processingInstruction, color: 'var(--syn-meta)' },
+  { tag: CM.tags.contentSeparator, color: 'var(--syn-list)' },
+  { tag: CM.tags.meta, color: 'var(--syn-meta)' }
 ]);
 
 const editorTheme = CM.EditorView.theme({
@@ -32,17 +35,17 @@ const editorTheme = CM.EditorView.theme({
     fontFamily: 'var(--font-mono)',
     lineHeight: '1.7',
     padding: '28px 32px',
-    caretColor: '#5eead4'
+    caretColor: 'var(--syn-cursor)'
   },
   '.cm-scroller': { overflow: 'auto' },
   '&.cm-focused': { outline: 'none' },
-  '.cm-cursor': { borderLeftColor: '#5eead4', borderLeftWidth: '2px' },
+  '.cm-cursor': { borderLeftColor: 'var(--syn-cursor)', borderLeftWidth: '2px' },
   '.cm-selectionBackground, &.cm-focused .cm-selectionBackground': {
-    backgroundColor: 'rgba(94, 234, 212, 0.18) !important'
+    backgroundColor: 'var(--syn-selection) !important'
   },
   '.cm-placeholder': { color: 'var(--ink-text-dim)', fontStyle: 'normal' },
   '.cm-line': { padding: '0' },
-  '&.cm-drop-active': { outline: '2px dashed #5eead4', outlineOffset: '-4px' }
+  '&.cm-drop-active': { outline: '2px dashed var(--syn-cursor)', outlineOffset: '-4px' }
 }, { dark: true });
 
 // ---------- Continuation intelligente des listes (Entrée) ----------

@@ -276,6 +276,33 @@
     renderPreview();
   });
 
+  // Correcteur orthographique : desactivé par défaut sur l'éditeur
+  // CodeMirror (comportement natif de CM6), ce qui gênait certains usages.
+  // Appliqué au contentDOM directement dans init(), une fois cmEditor créé.
+  const SPELLCHECK_STORAGE_KEY = 'md-editor:spellcheck';
+  const toggleSpellcheck = document.getElementById('toggle-spellcheck');
+  toggleSpellcheck.checked = safeGet(SPELLCHECK_STORAGE_KEY) === '1';
+  toggleSpellcheck.addEventListener('change', () => {
+    safeSet(SPELLCHECK_STORAGE_KEY, toggleSpellcheck.checked ? '1' : '0');
+    if (cmEditor) cmEditor.getView().contentDOM.setAttribute('spellcheck', toggleSpellcheck.checked ? 'true' : 'false');
+  });
+
+  // Coloration de l'éditeur : découplée du thème d'aperçu du document
+  // (css/themes/*.css). Pilotée par [data-editor-syntax] sur <body>,
+  // voir les variables --syn-* dans css/editor.css.
+  const EDITOR_SYNTAX_STORAGE_KEY = 'md-editor:editor-syntax';
+  const editorSyntaxRadios = document.querySelectorAll('input[name="editor-syntax"]');
+  const savedSyntax = safeGet(EDITOR_SYNTAX_STORAGE_KEY) || 'encre';
+  document.body.setAttribute('data-editor-syntax', savedSyntax);
+  editorSyntaxRadios.forEach((radio) => {
+    radio.checked = radio.value === savedSyntax;
+    radio.addEventListener('change', () => {
+      if (!radio.checked) return;
+      document.body.setAttribute('data-editor-syntax', radio.value);
+      safeSet(EDITOR_SYNTAX_STORAGE_KEY, radio.value);
+    });
+  });
+
   fileMenu.querySelectorAll('[data-action]').forEach(btn => {
     btn.addEventListener('click', async () => {
       fileMenu.classList.remove('open');
@@ -378,6 +405,14 @@
       loadDocumentIntoEditor('', 'sans-titre');
     },
     duplicateDocument: (id) => duplicateDocument(id),
+    renameDocument: async (id, title) => {
+      if (id === getActiveDocId()) {
+        docTitle.value = title;
+        await flushSave();
+        return true;
+      }
+      return renameDocumentRecord(id, title);
+    },
     deleteDocument: async (id) => {
       const switchedTo = await deleteDocumentAndMaybeSwitch(id);
       if (switchedTo) loadDocumentIntoEditor(switchedTo.content, switchedTo.title);
@@ -434,6 +469,7 @@ console.log("bloc de code coloré");
     docTitle.value = title || 'sans-titre';
 
     cmEditor = createMarkdownEditor(editorMount, initialContent, onEditorChange);
+    cmEditor.getView().contentDOM.setAttribute('spellcheck', toggleSpellcheck.checked ? 'true' : 'false');
     cmEditor.getView().scrollDOM.addEventListener('scroll', throttledRaf(syncPreviewFromEditor));
     preview.addEventListener('scroll', throttledRaf(syncEditorFromPreview));
 

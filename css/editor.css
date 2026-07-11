@@ -45,6 +45,65 @@
   --ink-bg: var(--bg-app);
   --ink-text: var(--text);
   --ink-text-dim: var(--text-dim);
+
+  /* Coloration syntaxique de l'éditeur (pas du rendu du document — voir
+     css/themes/*.css pour ça). Palette par défaut "Encre" : reprend les
+     teintes historiques codées en dur dans js/editor-cm.js, maintenant
+     pilotables sans toucher au JS. Sélectionnable via le menu Options,
+     indépendamment du thème d'aperçu choisi. */
+  --syn-heading: #5eead4;
+  --syn-strong: #f5f3ee;
+  --syn-em: #f5f3ee;
+  --syn-strike: #8b8f9a;
+  --syn-link: #7dd3fc;
+  --syn-code: #ffb86b;
+  --syn-quote: #8b8f9a;
+  --syn-list: #5eead4;
+  --syn-meta: #6b7280;
+  --syn-cursor: #5eead4;
+  --syn-selection: rgba(94, 234, 212, 0.18);
+}
+
+/* Palettes de coloration syntaxique alternatives, indépendantes du thème
+   d'aperçu du document. Activées via [data-editor-syntax] sur <body>. */
+[data-editor-syntax="minimal"] {
+  --syn-heading: #ece9e4;
+  --syn-strong: #ece9e4;
+  --syn-em: #ece9e4;
+  --syn-strike: #625d57;
+  --syn-link: #9c968f;
+  --syn-code: #c8393a;
+  --syn-quote: #625d57;
+  --syn-list: #ece9e4;
+  --syn-meta: #625d57;
+  --syn-cursor: #c8393a;
+  --syn-selection: rgba(200, 57, 58, 0.16);
+}
+[data-editor-syntax="solaire"] {
+  --syn-heading: #e8a33d;
+  --syn-strong: #f5e6c8;
+  --syn-em: #f5e6c8;
+  --syn-strike: #8b8577;
+  --syn-link: #7fb4ca;
+  --syn-code: #c97b4a;
+  --syn-quote: #8b8577;
+  --syn-list: #e8a33d;
+  --syn-meta: #6b6558;
+  --syn-cursor: #e8a33d;
+  --syn-selection: rgba(232, 163, 61, 0.16);
+}
+[data-editor-syntax="forge"] {
+  --syn-heading: #7fd88f;
+  --syn-strong: #eef4ee;
+  --syn-em: #eef4ee;
+  --syn-strike: #7a8a7d;
+  --syn-link: #82c4e0;
+  --syn-code: #e0b96b;
+  --syn-quote: #7a8a7d;
+  --syn-list: #7fd88f;
+  --syn-meta: #5f6b62;
+  --syn-cursor: #7fd88f;
+  --syn-selection: rgba(127, 216, 143, 0.16);
 }
 
 * { box-sizing: border-box; }
@@ -446,6 +505,28 @@ body {
 .menu-toggle:hover { background: var(--bg-hover); }
 .menu-toggle input { accent-color: var(--accent); cursor: pointer; }
 
+.menu-label-row {
+  padding: 8px 10px 2px;
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-faint);
+}
+.menu-radio {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 12.5px;
+  color: var(--text);
+}
+.menu-radio:hover { background: var(--bg-hover); }
+.menu-radio input { accent-color: var(--accent); cursor: pointer; }
+
 .menu-hint {
   padding: 6px 10px 10px;
   font-size: 10.5px;
@@ -778,6 +859,19 @@ body.focus-mode .pane {
   vertical-align: middle;
 }
 .dc-dup { font-size: 13px; }
+.dc-title-row { display: flex; align-items: center; gap: 4px; }
+.dc-rename-input {
+  background: var(--bg-app);
+  border: 1px solid var(--accent);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  width: 100%;
+  max-width: 220px;
+}
+.dc-rename-input:focus { outline: none; }
 
 /* ---------- Recherche / remplacement ---------- */
 .fr-panel {
