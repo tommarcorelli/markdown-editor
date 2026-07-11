@@ -42,7 +42,7 @@
 
   async function flushSave() {
     renderPreview();
-    const saved = await persistDocument(cmEditor.getValue(), docTitle.value);
+    const saved = await persistActiveDocument(cmEditor.getValue(), docTitle.value);
     if (saved === 'quota-exceeded') {
       setSaveStatus('Trop volumineux pour l\'autosave — pense à exporter', true);
     } else if (saved === 'memory') {
@@ -83,7 +83,7 @@
   });
 
   docTitle.addEventListener('change', () => {
-    persistDocument(cmEditor.getValue(), docTitle.value);
+    persistActiveDocument(cmEditor.getValue(), docTitle.value);
   });
 
   // ---------- Scroll sync éditeur <-> preview ----------
@@ -283,25 +283,24 @@
 
       try {
         if (action === 'new') {
-          if (cmEditor.getValue() && !confirm('Créer un nouveau document ? Le contenu actuel sera perdu s\'il n\'est pas exporté.')) return;
-          cmEditor.setValue('');
-          docTitle.value = 'sans-titre';
+          await flushSave();
+          await createAndSwitchDocument('sans-titre', '');
+          loadDocumentIntoEditor('', 'sans-titre');
         }
 
         if (action === 'reset-all') {
-          if (!confirm('Réinitialiser l\'application ? Ceci efface le document courant ET tout l\'historique de versions, sans retour possible.')) return;
+          if (!confirm('Réinitialiser l\'application ? Ceci efface TOUS les documents ET tout l\'historique de versions, sans retour possible.')) return;
           if (!confirm('Dernière confirmation : tout sera effacé définitivement. Continuer ?')) return;
-          await resetAllStorage();
-          cmEditor.setValue('');
-          docTitle.value = 'sans-titre';
+          const doc = await resetAllStorage();
+          loadDocumentIntoEditor(doc ? doc.content : '', doc ? doc.title : 'sans-titre');
           setSaveStatus('Enregistré', false);
         }
 
         if (action === 'open') {
-          if (cmEditor.getValue() && !confirm('Ouvrir un autre fichier ? Le contenu actuel sera remplacé s\'il n\'est pas exporté.')) return;
           const { content, title } = await openMarkdownFile();
-          cmEditor.setValue(content);
-          docTitle.value = title;
+          await flushSave();
+          await createAndSwitchDocument(title, content);
+          loadDocumentIntoEditor(content, title);
         }
 
         if (action === 'save') {
@@ -362,23 +361,47 @@
     replaceCurrent: (q, r, cs) => cmEditor.replaceCurrent(q, r, cs),
     replaceAll: (q, r, cs) => cmEditor.replaceAll(q, r, cs),
     matchInfo: (q, cs) => cmEditor.matchInfo(q, cs),
-    focus: () => cmEditor.focus()
+    focus: () => cmEditor.focus(),
+    // ---- multi-documents ----
+    getActiveDocId: () => getActiveDocId(),
+    listDocuments: () => idbListDocuments(),
+    switchDocument: async (id) => {
+      if (id === getActiveDocId()) return null;
+      await flushSave();
+      const doc = await switchActiveDocument(id);
+      if (doc) loadDocumentIntoEditor(doc.content, doc.title);
+      return doc;
+    },
+    newDocument: async () => {
+      await flushSave();
+      await createAndSwitchDocument('sans-titre', '');
+      loadDocumentIntoEditor('', 'sans-titre');
+    },
+    duplicateDocument: (id) => duplicateDocument(id),
+    deleteDocument: async (id) => {
+      const switchedTo = await deleteDocumentAndMaybeSwitch(id);
+      if (switchedTo) loadDocumentIntoEditor(switchedTo.content, switchedTo.title);
+      return switchedTo;
+    }
   };
 
   // ---------- Glisser-déposer un fichier .md/.txt pour l'ouvrir ----------
   // Les images sont déjà gérées dans editor-cm.js (domEventHandlers.drop) et
   // renvoient false pour les fichiers non-image, donc l'événement continue
-  // de remonter jusqu'ici sans interférence.
+  // de remonter jusqu'ici sans interférence. Le fichier déposé devient un
+  // nouveau document plutôt que d'écraser celui déjà ouvert.
   const TEXT_DROP_RE = /\.(md|markdown|txt)$/i;
   editorMount.addEventListener('drop', async (e) => {
     const file = Array.from(e.dataTransfer?.files || []).find((f) => TEXT_DROP_RE.test(f.name));
     if (!file) return; // pas un fichier texte reconnu : on laisse le comportement existant (images, etc.)
     e.preventDefault();
     e.stopPropagation();
-    if (cmEditor.getValue() && !confirm(`Ouvrir "${file.name}" ? Le contenu actuel sera remplacé s'il n'est pas exporté.`)) return;
     try {
       const text = await file.text();
-      loadDocumentIntoEditor(text, file.name.replace(/\.[^.]+$/, ''));
+      const title = file.name.replace(/\.[^.]+$/, '');
+      await flushSave();
+      await createAndSwitchDocument(title, text);
+      loadDocumentIntoEditor(text, title);
     } catch (err) {
       alert(`Impossible de lire ce fichier : ${err.message || err}`);
     }
@@ -394,7 +417,8 @@
 
   async function init() {
     initTheme();
-    const { content, title } = await restoreDocument();
+    const doc = await initDocumentStore();
+    const { content, title } = doc ? { content: doc.content, title: doc.title } : loadFromLocalStorage();
     const initialContent = content || `# Bienvenue
 
 Commence à écrire en **markdown** ici, l'aperçu se met à jour en direct à droite.
@@ -407,7 +431,7 @@ Commence à écrire en **markdown** ici, l'aperçu se met à jour en direct à d
 console.log("bloc de code coloré");
 \`\`\`
 `;
-    docTitle.value = title;
+    docTitle.value = title || 'sans-titre';
 
     cmEditor = createMarkdownEditor(editorMount, initialContent, onEditorChange);
     cmEditor.getView().scrollDOM.addEventListener('scroll', throttledRaf(syncPreviewFromEditor));

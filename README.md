@@ -46,26 +46,19 @@ Toutes les libs (markdown-it, DOMPurify, highlight.js, CodeMirror 6, jsPDF, html
 Classées par proximité avec l'existant (donc par facilité relative), pas par priorité absolue.
 
 ### Édition
-- [ ] Recherche/remplacement dans l'éditeur (Ctrl+F)
-- [ ] Multi-documents (onglets, plusieurs fichiers ouverts simultanément)
-- [ ] Diagrammes Mermaid dans les blocs de code (flowcharts, séquences, gantt)
 - [ ] Coloration syntaxique de l'éditeur découplée du thème de rendu du document (actuellement liées à la palette "encre" fixe)
-- [ ] Renommage de fichier drag & drop dans l'explorateur (si un mode multi-fichiers arrive)
-- [ ] Correcteur orthographique (`spellcheck` navigateur est désactivé sur l'éditeur actuellement — `spellcheck="false"` sur le mount CodeMirror)
+- [ ] Correcteur orthographique (`spellcheck` est désactivé par défaut sur l'éditeur CodeMirror ; un simple toggle dans le menu Options suffirait)
+- [ ] Renommage de document directement depuis le panneau "Mes documents" (aujourd'hui il faut ouvrir le document puis éditer le champ titre)
 
 ### Export / PDF
 - [ ] Polices custom dans le PDF vectoriel (actuellement Roboto uniquement, faute de fichiers de police Times/Calibri embarqués dans le VFS pdfmake)
-- [ ] Export DOCX natif (via une lib comme `docx` npm, pour un vrai fichier Word éditable plutôt qu'un PDF qui y ressemble)
-- [ ] Notes de bas de page markdown (`[^1]`) — non supportées par markdown-it de base, nécessite un plugin
-- [ ] Export EPUB (pour les documents longs type mémoire/livre)
-
-### PWA / offline
-- [ ] Bouton "Installer l'app" explicite dans l'UI (actuellement seulement via le menu natif du navigateur)
-- [ ] Indicateur visuel "mode hors-ligne actif"
 
 ### Thèmes / design
 - [ ] Éditeur de thème visuel (color picker en direct plutôt que fichiers CSS à écrire)
 - [ ] Import/export de thème custom (JSON ou CSS uploadable)
+
+### Fait depuis la rédaction de cette liste (à garder synchronisé !)
+Recherche/remplacement (Ctrl+F/H), multi-documents (`js/documents.js`, `js/idb-storage.js`), historique de versions par document, Mermaid, export DOCX/EPUB, notes de bas de page (`[^1]`, le plugin était vendorisé mais jamais réellement branché — corrigé dans `renderer.js`), indicateur hors-ligne et bouton d'installation PWA explicites (`js/pwa-ui.js`). Voir `roadmap.md` à la racine pour le détail et l'historique complet des sessions de travail.
 
 ---
 

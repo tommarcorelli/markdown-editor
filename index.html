@@ -24,6 +24,7 @@
         <span class="save-dot"></span><span class="save-status-text">Enregistré</span>
       </div>
     </div>
+    <span class="offline-badge" id="offline-badge" role="status" aria-live="polite" hidden>Hors ligne</span>
   </div>
 
   <div class="topbar-center">
@@ -42,6 +43,10 @@
   </div>
 
   <div class="topbar-right">
+    <button type="button" class="install-btn" id="install-btn" hidden>
+      <svg viewBox="0 0 16 16" width="13" height="13"><path d="M8 1.5v9m0 0L4.5 7M8 10.5L11.5 7M2.5 12.5v1a1 1 0 001 1h9a1 1 0 001-1v-1" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Installer
+    </button>
     <div class="select-wrap">
       <select id="theme-select" class="theme-select" aria-label="Thème de rendu">
         <option value="github">Github</option>
@@ -95,6 +100,8 @@
         <span class="menu-label">Fichier</span>
       </button>
       <div class="menu-list">
+        <button id="documents-btn"><span class="mi">🗂</span>Mes documents</button>
+        <div class="menu-sep"></div>
         <button data-action="new"><span class="mi">＋</span>Nouveau</button>
         <button data-action="open"><span class="mi">⤴</span>Ouvrir…</button>
         <button id="version-history-btn"><span class="mi">🕘</span>Historique des versions</button>
@@ -184,9 +191,11 @@
 <script src="js/editor-cm.js"></script>
 <script src="js/app.js"></script>
 <script src="js/find-replace.js"></script>
+<script src="js/documents.js"></script>
 <script src="js/version-history.js"></script>
 <script src="js/custom-select.js"></script>
 <script src="js/enhancements.js"></script>
+<script src="js/pwa-ui.js"></script>
 
 <script>
   // PWA : les service workers exigent https:// ou localhost — ça échoue

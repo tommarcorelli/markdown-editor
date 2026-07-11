@@ -20,12 +20,22 @@ Suivi des pistes d'amélioration discutées, classées par état.
 - **Mode focus** (Ctrl/Cmd+Shift+F, déjà présent) : masque barre du haut, barre d'outils et barre de statut ; listé ici car vérifié et relié à la palette de commandes.
 - **Thème de preview aligné sur le système** : au tout premier lancement (aucun choix enregistré), le thème sombre "Nuit" est proposé si `prefers-color-scheme: dark`, sinon "Github". Un choix explicite ultérieur reste toujours prioritaire.
 - **Export HTML plus robuste hors-ligne** : les piles de polices incluent maintenant de bonnes polices système (ui-monospace, SF Mono, Iowan Old Style…) avant les génériques, pour un rendu soigné même quand `fonts.googleapis.com` n'est pas joignable. (Embarquer les polices elles-mêmes en base64 nécessiterait de télécharger les fichiers binaires, hors de portée sans accès réseau ici.)
+- **Multi-documents** : *Fichier → Mes documents* liste tous les documents (IndexedDB), avec bascule, duplication et suppression. "Nouveau" et "Ouvrir un fichier" créent désormais un nouveau document au lieu d'écraser celui en cours — plus besoin de confirmation destructive. L'historique de versions est isolé par document. Migration automatique et testée depuis l'ancien schéma à document unique (les utilisateurs existants retrouvent leur brouillon tel quel, transformé en premier document).
+- **Bug corrigé — notes de bas de page** : `js/vendor/markdown-it-footnote.min.js` était chargé mais jamais réellement enregistré auprès de markdown-it (`.use()` manquant) — la syntaxe `[^1]` passait donc telle quelle, non interprétée. Branché + stylé dans `_base.css`, testé.
+- **Indicateur hors-ligne** : petit badge ambre "Hors ligne" dans la barre du haut, basé sur `navigator.onLine` + les événements `online`/`offline`.
+- **Bouton d'installation PWA explicite** : capte `beforeinstallprompt`, affiche un bouton "Installer" dans la barre du haut plutôt que de compter sur la mini-infobar cachée du navigateur.
+- **`README.md` remis à jour** : sa propre section roadmap listait comme "non fait" plusieurs choses déjà implémentées (Mermaid, export DOCX/EPUB) — corrigé, et les vrais points restants y sont maintenant à jour.
 
 ## 💡 Proposé, pas encore fait
 
-- **Multi-documents** : une petite liste de documents (sidebar ou menu) plutôt qu'un seul document actif. La structure IndexedDB posée pour l'historique de versions s'y prête déjà — il suffirait de remplacer la clé fixe `'current'` par un id de document.
+- **Coloration syntaxique de l'éditeur découplée du thème de rendu** : actuellement liée à une palette fixe ("encre"), indépendante du thème de prévisualisation choisi.
+- **Correcteur orthographique** : `spellcheck` est désactivé par défaut sur l'éditeur CodeMirror (comportement natif de CM6) ; un simple toggle dans le menu Options suffirait.
+- **Renommage de document depuis le panneau "Mes documents"** : aujourd'hui il faut ouvrir le document puis éditer le champ titre dans la barre du haut.
+- **Polices custom dans le PDF vectoriel** : actuellement Roboto uniquement (pdfmake), faute de fichiers de police Times/Calibri embarqués dans son VFS.
+- **Éditeur de thème visuel** (color picker en direct) et **import/export de thème custom** : plus gros chantiers côté design.
 
 ## Notes techniques
 
 - Le bundle CodeMirror embarqué (`js/vendor/codemirror.min.js`) n'inclut pas `@codemirror/search` ; la recherche/remplacement a été reconstruite au-dessus des primitives déjà présentes (`EditorSelection`, `view.dispatch`) plutôt que d'ajouter une dépendance.
-- Toute évolution du stockage passe par `js/idb-storage.js` (IndexedDB, source de vérité) avec repli sur `js/storage.js` (localStorage).
+- Toute évolution du stockage passe par `js/idb-storage.js` (IndexedDB, source de vérité) avec repli sur `js/storage.js` (localStorage, mode "un seul document" si IndexedDB est indisponible).
+- Schéma IndexedDB v2 : magasin `doc` (un enregistrement par document), `versions` (indexé par `docId`), `meta` (document actif). La migration depuis le schéma v1 (document unique, id fixe `'current'`) se fait dans `onupgradeneeded` et a été testée : le document existant devient simplement le premier document du mode multi-doc, ses anciennes versions sont rattachées à son id.

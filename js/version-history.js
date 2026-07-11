@@ -6,7 +6,7 @@
   overlay.className = 'cmd-overlay vh-overlay';
   overlay.innerHTML = `<div class="cmd-modal vh-modal" role="dialog" aria-modal="true" aria-label="Historique des versions">
     <div class="vh-header">
-      <span>Historique des versions</span>
+      <span>Historique des versions de ce document</span>
       <div class="vh-header-actions">
         <button type="button" class="vh-clear-all">Vider l'historique</button>
         <button type="button" class="vh-close" aria-label="Fermer">✕</button>
@@ -37,13 +37,18 @@
   }
 
   async function renderList() {
-    if (typeof idbListVersions !== 'function') {
+    if (typeof idbListVersions !== 'function' || !window.mdEditor) {
       list.innerHTML = '<div class="vh-empty">Historique indisponible dans ce navigateur.</div>';
       return;
     }
-    const versions = await idbListVersions();
+    const docId = window.mdEditor.getActiveDocId();
+    if (!docId) {
+      list.innerHTML = '<div class="vh-empty">Historique indisponible dans ce navigateur.</div>';
+      return;
+    }
+    const versions = await idbListVersions(docId);
     if (!versions.length) {
-      list.innerHTML = '<div class="vh-empty">Pas encore d\'instantané. Un enregistrement automatique est pris toutes les 90 secondes environ pendant la frappe.</div>';
+      list.innerHTML = '<div class="vh-empty">Pas encore d\'instantané pour ce document. Un enregistrement automatique est pris toutes les 90 secondes environ pendant la frappe.</div>';
       return;
     }
     list.innerHTML = versions.map((v) => `
@@ -96,18 +101,21 @@
     const id = parseInt(btn.dataset.id, 10);
     const version = await idbGetVersion(id);
     if (!version) return;
+    const docId = window.mdEditor ? window.mdEditor.getActiveDocId() : null;
     const currentValue = window.mdEditor ? window.mdEditor.getValue() : '';
     const currentTitle = window.mdEditor ? window.mdEditor.getTitle() : '';
     if (currentValue && !confirm('Restaurer cette version ? Le contenu actuel sera remplacé (il reste lui-même récupérable si un instantané récent existe).')) return;
     // On prend un instantané du contenu courant avant d'écraser, pour rester réversible.
-    if (typeof idbAddVersion === 'function' && currentValue) idbAddVersion(currentValue, currentTitle, true);
+    if (typeof idbAddVersion === 'function' && currentValue && docId) idbAddVersion(docId, currentValue, currentTitle, true);
     if (window.mdEditor) window.mdEditor.loadDocument(version.content, version.title || 'sans-titre');
     close();
   });
 
   clearAllBtn.addEventListener('click', async () => {
-    if (!confirm('Vider tout l\'historique de versions ? Cette action est définitive et ne touche pas au document courant.')) return;
-    await idbClearVersions();
+    const docId = window.mdEditor ? window.mdEditor.getActiveDocId() : null;
+    if (!docId) return;
+    if (!confirm('Vider l\'historique de ce document ? Cette action est définitive et ne touche pas à son contenu actuel.')) return;
+    await idbClearVersionsForDoc(docId);
     renderList();
   });
 

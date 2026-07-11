@@ -60,6 +60,7 @@
     { icon: '↓', label: 'Enregistrer (.md)', shortcut: '⌘S', run: () => fileAction('save') },
     { icon: '⤒', label: 'Nouveau document', run: () => fileAction('new') },
     { icon: '⤴', label: 'Ouvrir un fichier…', run: () => fileAction('open') },
+    { icon: '🗂', label: 'Mes documents', run: () => { if (window.openDocuments) window.openDocuments(); } },
     { icon: '🕘', label: 'Historique des versions', run: () => { if (window.openVersionHistory) window.openVersionHistory(); } },
     { icon: '↗', label: 'Exporter en HTML', run: () => fileAction('export-html') },
     { icon: '📄', label: 'Exporter en PDF (fidèle au thème)', run: () => fileAction('export-pdf') },

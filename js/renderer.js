@@ -14,6 +14,12 @@ const md = window.markdownit({
   }
 });
 
+// Notes de bas de page ([^1] ... [^1]: texte). La lib est vendorisée
+// (js/vendor/markdown-it-footnote.min.js) mais n'était jamais enregistrée
+// auprès de markdown-it : la syntaxe [^1] passait donc telle quelle,
+// non interprétée.
+if (window.markdownitFootnote) md.use(window.markdownitFootnote);
+
 // Injecte data-line=<n° de ligne source> sur chaque token de bloc,
 // utilisé ensuite pour synchroniser le scroll éditeur <-> preview.
 md.core.ruler.push('inject_line_numbers', (state) => {
