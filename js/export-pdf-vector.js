@@ -416,3 +416,124 @@ async function exportAsVectorPdf(source, title, themeName, onStatusChange) {
     onStatusChange?.(null);
   }
 }
+
+// ---------- Mise en page "Lettre" — sobre, sans sommaire ni numérotation ----------
+async function exportAsLetterPdf(source, title, themeName, onStatusChange) {
+  onStatusChange?.('Analyse du document…');
+  const palette = getThemePalette(themeName);
+
+  const tokens = md.parse(source, {}); // pas de numberHeadingTokens : une lettre n'a pas de sections numérotées
+  const body = tokensToPdfContent(tokens, palette);
+  const dateStr = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  onStatusChange?.('Génération du PDF…');
+
+  const docDefinition = {
+    pageSize: 'A4',
+    pageMargins: [72, 80, 72, 64], // marges généreuses, format courrier
+    background: () => ({
+      canvas: [{ type: 'rect', x: 0, y: 0, w: 595, h: 842, color: palette.bg }]
+    }),
+    footer: (currentPage, pageCount) => pageCount > 1 ? {
+      text: `${currentPage} / ${pageCount}`,
+      fontSize: 8,
+      color: palette.muted,
+      alignment: 'center'
+    } : null,
+    content: [
+      { text: dateStr, fontSize: 9.5, color: palette.muted, alignment: 'right', margin: [0, 0, 0, 28] },
+      { text: title || 'Document', fontSize: 16, bold: true, color: palette.accent, margin: [0, 0, 0, 20] },
+      ...body
+    ],
+    defaultStyle: {
+      font: 'Roboto',
+      color: palette.text,
+      lineHeight: 1.4
+    }
+  };
+
+  try {
+    window.pdfMake.createPdf(docDefinition).download(`${title || 'document'}.pdf`);
+  } finally {
+    onStatusChange?.(null);
+  }
+}
+
+// ---------- Mise en page "Académique" — page de titre, sommaire, texte justifié ----------
+async function exportAsAcademicPdf(source, title, themeName, onStatusChange) {
+  onStatusChange?.('Analyse du document…');
+  const palette = getThemePalette(themeName);
+
+  const tokens = md.parse(source, {});
+  numberHeadingTokens(tokens);
+  const tocEntries = collectToc(tokens);
+  const body = tokensToPdfContent(tokens, palette);
+  // Texte justifié pour un rendu façon article : seuls les paragraphes de type
+  // "text" (pas les cellules de tableau/citation, déjà stylées) sont concernés.
+  body.forEach((block) => {
+    if (block && block.text && Array.isArray(block.text)) block.alignment = 'justify';
+  });
+  const dateStr = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  const tocContent = tocEntries.length >= 2 ? [
+    { text: 'Sommaire', fontSize: 13, bold: true, color: palette.accent, margin: [0, 0, 0, 8] },
+    ...tocEntries.map((e) => ({
+      text: e.text,
+      fontSize: 9.5 + (4 - e.level),
+      color: palette.muted,
+      margin: [(e.level - 2) * 14, 1, 0, 1]
+    })),
+    { text: '', pageBreak: 'after' }
+  ] : [];
+
+  onStatusChange?.('Génération du PDF…');
+
+  const docDefinition = {
+    pageSize: 'A4',
+    pageMargins: [60, 70, 60, 55],
+    background: () => ({
+      canvas: [{ type: 'rect', x: 0, y: 0, w: 595, h: 842, color: palette.bg }]
+    }),
+    header: (currentPage) => currentPage <= 1 ? null : {
+      text: title || 'document',
+      fontSize: 8,
+      italics: true,
+      color: palette.muted,
+      alignment: 'center',
+      margin: [0, 24, 0, 0]
+    },
+    footer: (currentPage, pageCount) => ({
+      text: `${currentPage}`,
+      fontSize: 8.5,
+      color: palette.muted,
+      alignment: 'center'
+    }),
+    content: [
+      // Page de titre dédiée : titre centré, filet double, date — reste seule sur la page 1
+      {
+        text: title || 'Document',
+        fontSize: 24,
+        bold: true,
+        color: palette.accent,
+        alignment: 'center',
+        margin: [0, 160, 0, 8]
+      },
+      { canvas: [{ type: 'line', x1: 197, y1: 0, x2: 397, y2: 0, lineWidth: 1, lineColor: palette.accent }], margin: [0, 0, 0, 10] },
+      { text: dateStr, fontSize: 10.5, color: palette.muted, alignment: 'center' },
+      { text: '', pageBreak: 'after' },
+      ...tocContent,
+      ...body
+    ],
+    defaultStyle: {
+      font: 'Roboto',
+      color: palette.text,
+      lineHeight: 1.3
+    }
+  };
+
+  try {
+    window.pdfMake.createPdf(docDefinition).download(`${title || 'document'}.pdf`);
+  } finally {
+    onStatusChange?.(null);
+  }
+}

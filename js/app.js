@@ -350,6 +350,18 @@
           });
         }
 
+        if (action === 'export-pdf-lettre') {
+          await exportAsLetterPdf(cmEditor.getValue(), docTitle.value, themeSelect.value, (status) => {
+            setSaveStatus(status || 'Enregistré', !!status);
+          });
+        }
+
+        if (action === 'export-pdf-academique') {
+          await exportAsAcademicPdf(cmEditor.getValue(), docTitle.value, themeSelect.value, (status) => {
+            setSaveStatus(status || 'Enregistré', !!status);
+          });
+        }
+
         if (action === 'export-pdf-office') {
           await exportAsOfficePdf(cmEditor.getValue(), docTitle.value, (status) => {
             setSaveStatus(status || 'Enregistré', !!status);

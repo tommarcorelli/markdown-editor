@@ -1,0 +1,56 @@
+/* personnalise.css — thème "Personnalisé", piloté par variables CSS
+   (--ct-*) plutôt que des couleurs figées comme les autres thèmes.
+   Les valeurs réelles sont injectées par js/theme-editor.js dans un
+   <style id="custom-theme-vars"> sur :root ; les valeurs par défaut
+   ci-dessous (2e argument de chaque var()) ne servent que tant que
+   l'utilisateur n'a encore rien personnalisé. */
+
+.markdown-body {
+  font-family: -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--ct-text, #2b2720);
+  background: var(--ct-bg, #ffffff);
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 4px 0 20px;
+}
+.markdown-body h1, .markdown-body h2, .markdown-body h3,
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  color: var(--ct-heading, #16130f);
+  font-weight: 700;
+}
+.markdown-body h1 { font-size: 1.9em; border-bottom: 2px solid var(--ct-heading, #16130f); padding-bottom: 0.3em; }
+.markdown-body h2 { font-size: 1.45em; margin-top: 1.7em; }
+.markdown-body h3 { font-size: 1.15em; margin-top: 1.4em; }
+.markdown-body a { color: var(--ct-link, #0969da); text-decoration: underline; }
+.markdown-body strong { color: var(--ct-heading, #16130f); }
+.markdown-body code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85em;
+  background: var(--ct-code-bg, #f6f8fa);
+  color: var(--ct-code-text, #c8393a);
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+}
+.markdown-body pre {
+  background: var(--ct-pre-bg, #0d1117);
+  padding: 14px 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+}
+.markdown-body pre code { background: transparent; color: var(--ct-pre-text, #e6edf3); padding: 0; }
+.markdown-body blockquote {
+  border-left: 3px solid var(--ct-quote-border, #d0d7de);
+  margin: 1.3em 0;
+  padding: 0.1em 0 0.1em 1.1em;
+  color: var(--ct-quote-text, #57606a);
+  font-style: italic;
+}
+.markdown-body table { border-collapse: collapse; width: 100%; margin: 1.4em 0; }
+.markdown-body th, .markdown-body td { border: 1px solid var(--ct-table-border, #d0d7de); padding: 7px 12px; }
+.markdown-body th { background: var(--ct-code-bg, #f6f8fa); }
+.markdown-body img { max-width: 100%; border-radius: 6px; }
+.markdown-body hr { border: none; border-top: 1px solid var(--ct-table-border, #d0d7de); margin: 2.2em 0; }
+.markdown-body .doc-toc { border-color: var(--ct-table-border, #d0d7de); }
+.markdown-body .heading-num { color: var(--ct-link, #0969da); }

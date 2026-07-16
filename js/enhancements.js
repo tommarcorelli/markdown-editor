@@ -61,11 +61,18 @@
     { icon: '⤒', label: 'Nouveau document', run: () => fileAction('new') },
     { icon: '⤴', label: 'Ouvrir un fichier…', run: () => fileAction('open') },
     { icon: '🗂', label: 'Mes documents', run: () => { if (window.openDocuments) window.openDocuments(); } },
+    { icon: '🎨', label: 'Personnaliser le thème…', run: () => { if (window.openThemeEditor) window.openThemeEditor(); } },
     { icon: '🕘', label: 'Historique des versions', run: () => { if (window.openVersionHistory) window.openVersionHistory(); } },
     { icon: '↗', label: 'Exporter en HTML', run: () => fileAction('export-html') },
     { icon: '📄', label: 'Exporter en PDF (fidèle au thème)', run: () => fileAction('export-pdf') },
-    { icon: '📃', label: 'Exporter en PDF (texte sélectionnable)', run: () => fileAction('export-pdf-vector') },
-    { icon: 'W', label: 'Exporter en DOCX (Word)', run: () => exportDocx() },
+    { icon: '📃', label: 'Exporter en PDF — Rapport', run: () => fileAction('export-pdf-vector') },
+    { icon: '✉️', label: 'Exporter en PDF — Lettre', run: () => fileAction('export-pdf-lettre') },
+    { icon: '🎓', label: 'Exporter en PDF — Académique', run: () => fileAction('export-pdf-academique') },
+    { icon: '🏢', label: 'Exporter en PDF — Style Word', run: () => fileAction('export-pdf-office') },
+    { icon: 'W', label: 'Exporter en DOCX — Style Word', run: () => exportDocx('office') },
+    { icon: 'W', label: 'Exporter en DOCX — Rapport', run: () => exportDocx('rapport') },
+    { icon: 'W', label: 'Exporter en DOCX — Lettre', run: () => exportDocx('lettre') },
+    { icon: 'W', label: 'Exporter en DOCX — Académique', run: () => exportDocx('academique') },
     { icon: '📖', label: 'Exporter en EPUB', run: () => exportEpub() },
     { icon: '▤', label: 'Exporter en présentation', run: () => fileAction('export-slides') },
     { icon: '🖶', label: 'Imprimer (PDF navigateur)', run: () => fileAction('print-pdf') },
@@ -211,24 +218,90 @@
   }
   function currentTitle() { return ($('#doc-title').value || 'document').replace(/[\/\\?*:|"<>]/g, '_'); }
 
-  function exportDocx() {
+  function currentAccentColor() {
+    const themeSelect = document.getElementById('theme-select');
+    const name = themeSelect ? themeSelect.value : 'github';
+    return (typeof THEME_ACCENT !== 'undefined' && THEME_ACCENT[name]) || '#2e5395';
+  }
+
+  // Chaque mise en page ne change que ce que html-docx-js sait réellement
+  // traduire en OOXML : police, couleurs, marges de page, alignement,
+  // bloc de titre. Pas de mise en page à colonnes ni d'en-tête/pied de
+  // page dynamique — hors de portée de cette bibliothèque.
+  const DOCX_LAYOUTS = {
+    office: {
+      margins: { top: 1440, right: 1440, bottom: 1440, left: 1440, header: 720, footer: 720, gutter: 0 },
+      css: (accent) => `
+        body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.5; color: #222; }
+        h1, h2, h3, h4 { color: #111; margin-top: 1.2em; }
+        h1 { font-size: 22pt; } h2 { font-size: 17pt; } h3 { font-size: 14pt; }
+        code { font-family: Consolas, 'Courier New', monospace; background: #f2f2f2; padding: 1px 4px; }
+        pre { background: #f5f5f5; padding: 10px; font-family: Consolas, monospace; font-size: 10pt; white-space: pre-wrap; }
+        blockquote { border-left: 3px solid #888; margin: 1em 0; padding-left: 12px; color: #555; font-style: italic; }
+        table { border-collapse: collapse; } th, td { border: 1px solid #999; padding: 6px 10px; } th { background: #eee; }
+        img { max-width: 100%; }`,
+      titleBlock: (title) => `<h1>${title}</h1>`
+    },
+    rapport: {
+      margins: { top: 1260, right: 1440, bottom: 1260, left: 1440, header: 720, footer: 720, gutter: 0 },
+      css: (accent) => `
+        body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.5; color: #222; }
+        h1 { font-size: 24pt; color: ${accent}; border-bottom: 2px solid ${accent}; padding-bottom: 4px; }
+        h2, h3, h4 { color: ${accent}; margin-top: 1.2em; }
+        h2 { font-size: 16pt; } h3 { font-size: 13pt; }
+        a { color: ${accent}; }
+        code { font-family: Consolas, 'Courier New', monospace; background: #f2f2f2; padding: 1px 4px; }
+        pre { background: #f5f5f5; padding: 10px; font-family: Consolas, monospace; font-size: 10pt; white-space: pre-wrap; }
+        blockquote { border-left: 3px solid ${accent}; margin: 1em 0; padding-left: 12px; color: #555; font-style: italic; }
+        table { border-collapse: collapse; } th, td { border: 1px solid #999; padding: 6px 10px; } th { background: #f0f0f0; color: ${accent}; }
+        img { max-width: 100%; }`,
+      titleBlock: (title) => `<h1>${title}</h1>`
+    },
+    lettre: {
+      margins: { top: 1800, right: 1800, bottom: 1800, left: 1800, header: 720, footer: 720, gutter: 0 },
+      css: () => `
+        body { font-family: Cambria, Georgia, serif; font-size: 11pt; line-height: 1.6; color: #222; }
+        h1 { font-size: 15pt; font-weight: bold; margin-bottom: 0.8em; }
+        h2, h3, h4 { color: #222; margin-top: 1.2em; font-size: 12pt; }
+        .docx-date { text-align: right; color: #555; font-size: 10pt; margin-bottom: 1.6em; }
+        code { font-family: Consolas, 'Courier New', monospace; background: #f2f2f2; padding: 1px 4px; }
+        pre { background: #f5f5f5; padding: 10px; font-family: Consolas, monospace; font-size: 10pt; white-space: pre-wrap; }
+        blockquote { border-left: 2px solid #999; margin: 1em 0; padding-left: 12px; color: #555; font-style: italic; }
+        table { border-collapse: collapse; } th, td { border: 1px solid #999; padding: 6px 10px; } th { background: #eee; }
+        img { max-width: 100%; }`,
+      titleBlock: (title) => {
+        const dateStr = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+        return `<p class="docx-date">${dateStr}</p><h1>${title}</h1>`;
+      }
+    },
+    academique: {
+      margins: { top: 1440, right: 1440, bottom: 1440, left: 1440, header: 720, footer: 720, gutter: 0 },
+      css: () => `
+        body { font-family: 'Times New Roman', Cambria, serif; font-size: 12pt; line-height: 1.6; color: #111; text-align: justify; }
+        h1 { text-align: center; font-size: 20pt; margin-bottom: 0.2em; }
+        .docx-date { text-align: center; color: #555; font-size: 10pt; margin-bottom: 2.4em; }
+        h2, h3, h4 { color: #111; margin-top: 1.3em; text-align: left; }
+        h2 { font-size: 14pt; } h3 { font-size: 12.5pt; }
+        code { font-family: Consolas, 'Courier New', monospace; background: #f2f2f2; padding: 1px 4px; }
+        pre { background: #f5f5f5; padding: 10px; font-family: Consolas, monospace; font-size: 10pt; white-space: pre-wrap; text-align: left; }
+        blockquote { border-left: 2px solid #999; margin: 1em 0; padding-left: 12px; color: #555; font-style: italic; }
+        table { border-collapse: collapse; } th, td { border: 1px solid #999; padding: 6px 10px; } th { background: #eee; }
+        img { max-width: 100%; }`,
+      titleBlock: (title) => {
+        const dateStr = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+        return `<h1>${title}</h1><p class="docx-date">${dateStr}</p>`;
+      }
+    }
+  };
+
+  function exportDocx(layoutName) {
     if (!window.htmlDocx) { alert("Bibliothèque DOCX non chargée."); return; }
+    const layout = DOCX_LAYOUTS[layoutName] || DOCX_LAYOUTS.office;
     const title = currentTitle();
     const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title>
-    <style>
-      body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.5; color: #222; }
-      h1, h2, h3, h4 { color: #111; margin-top: 1.2em; }
-      h1 { font-size: 22pt; } h2 { font-size: 17pt; } h3 { font-size: 14pt; }
-      code { font-family: Consolas, 'Courier New', monospace; background: #f2f2f2; padding: 1px 4px; }
-      pre { background: #f5f5f5; padding: 10px; font-family: Consolas, monospace; font-size: 10pt; white-space: pre-wrap; }
-      blockquote { border-left: 3px solid #888; margin: 1em 0; padding-left: 12px; color: #555; font-style: italic; }
-      table { border-collapse: collapse; }
-      th, td { border: 1px solid #999; padding: 6px 10px; }
-      th { background: #eee; }
-      img { max-width: 100%; }
-    </style></head>
-    <body><h1>${title}</h1>${getPreviewClone()}</body></html>`;
-    const blob = window.htmlDocx.asBlob(html);
+    <style>${layout.css(currentAccentColor())}</style></head>
+    <body>${layout.titleBlock(title)}${getPreviewClone()}</body></html>`;
+    const blob = window.htmlDocx.asBlob(html, { margins: layout.margins });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url; a.download = `${title}.docx`; a.click();
@@ -300,12 +373,15 @@ blockquote { border-left: 3px solid #888; padding-left: 12px; color: #555; font-
       b.innerHTML = `<span class="mi">↓</span>${label}`;
       b.addEventListener('click', () => {
         document.querySelectorAll('.menu.open').forEach(m => m.classList.remove('open'));
-        if (action === 'docx') exportDocx();
+        if (action.startsWith('docx-')) exportDocx(action.slice(5));
         else if (action === 'epub') exportEpub();
       });
       return b;
     };
-    fileMenu.insertBefore(mkBtn('Exporter en DOCX (Word)', 'docx'), insertBefore);
+    fileMenu.insertBefore(mkBtn('Exporter en DOCX — Style Word', 'docx-office'), insertBefore);
+    fileMenu.insertBefore(mkBtn('Exporter en DOCX — Rapport', 'docx-rapport'), insertBefore);
+    fileMenu.insertBefore(mkBtn('Exporter en DOCX — Lettre', 'docx-lettre'), insertBefore);
+    fileMenu.insertBefore(mkBtn('Exporter en DOCX — Académique', 'docx-academique'), insertBefore);
     fileMenu.insertBefore(mkBtn('Exporter en EPUB', 'epub'), insertBefore);
   }
 

@@ -1,0 +1,55 @@
+.markdown-body {
+  font-family: -apple-system, 'Segoe UI', sans-serif;
+  font-size: 16px;
+  line-height: 1.7;
+  color: #cfe3f7;
+  background: #0d2a4a;
+  background-image:
+    linear-gradient(rgba(127, 212, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(127, 212, 255, 0.06) 1px, transparent 1px);
+  background-size: 24px 24px;
+  max-width: 760px;
+  margin: 0 auto;
+  min-height: 100%;
+  padding: 4px 0 40px;
+}
+.markdown-body h1, .markdown-body h2, .markdown-body h3 {
+  color: #7fd4ff;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.markdown-body h1 { font-size: 1.7em; border-bottom: 1px dashed #4fc3f7; padding-bottom: 0.3em; }
+.markdown-body h2 { font-size: 1.3em; margin-top: 1.6em; }
+.markdown-body h3 { font-size: 1.05em; margin-top: 1.4em; }
+.markdown-body a { color: #4fc3f7; text-decoration: underline; }
+.markdown-body a:hover { color: #ffffff; }
+.markdown-body strong { color: #ffffff; }
+.markdown-body code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85em;
+  background: rgba(127, 212, 255, 0.1);
+  color: #7fd4ff;
+  padding: 0.15em 0.4em;
+  border: 1px solid rgba(127, 212, 255, 0.3);
+  border-radius: 3px;
+}
+.markdown-body pre {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 14px 16px;
+  border: 1px dashed #4fc3f7;
+  overflow-x: auto;
+}
+.markdown-body pre code { background: transparent; padding: 0; border: none; color: #cfe3f7; }
+.markdown-body blockquote {
+  border-left: 3px dashed #4fc3f7;
+  margin: 1.2em 0;
+  padding: 0 1em;
+  color: #9bc4e0;
+}
+.markdown-body table { border-collapse: collapse; width: 100%; margin: 1.4em 0; }
+.markdown-body th, .markdown-body td { border: 1px dashed #4fc3f7; padding: 7px 12px; }
+.markdown-body th { background: rgba(127, 212, 255, 0.12); color: #7fd4ff; font-family: 'JetBrains Mono', monospace; }
+.markdown-body img { max-width: 100%; border: 1px solid #4fc3f7; }
+.markdown-body hr { border: none; border-top: 1px dashed #4fc3f7; margin: 2em 0; }

@@ -15,7 +15,8 @@ function exportAsHtml(htmlContent, title, themeName) {
   // Le CSS est embarqué en JS (js/theme-styles.js) plutôt que récupéré via
   // fetch() : fetch() échoue silencieusement quand l'éditeur est ouvert en
   // file:// (double-clic), ce qui produisait un export sans aucun style.
-  const themeCss = (THEME_CSS[themeName] || THEME_CSS.github)
+  let themeCss = THEME_CSS[themeName] || THEME_CSS.github;
+  themeCss = themeCss
     // Repli robuste hors-ligne : le <link> Google Fonts ne se chargera pas
     // sans connexion, donc on ajoute de bonnes polices système AVANT le
     // générique 'monospace'/'serif', plutôt que de dépendre uniquement du
@@ -23,9 +24,19 @@ function exportAsHtml(htmlContent, title, themeName) {
     .replace(/'JetBrains Mono', monospace/g, "'JetBrains Mono', ui-monospace, 'SF Mono', 'Cascadia Code', Consolas, monospace")
     .replace(/'Source Serif 4', Georgia, serif/g, "'Source Serif 4', Georgia, 'Iowan Old Style', 'Palatino Linotype', serif")
     .replace(/'Source Serif 4', Georgia, 'Times New Roman', serif/g, "'Source Serif 4', Georgia, 'Iowan Old Style', 'Times New Roman', serif");
-  const cardBg = THEME_BG[themeName] || '#ffffff';
+
+  // Le thème "Personnalisé" repose sur des var(--ct-*) : sans les valeurs
+  // réelles choisies par l'utilisateur, l'export retomberait sur les
+  // couleurs par défaut du template. On les embarque en dur ici.
+  let customValues = null;
+  if (themeName === 'personnalise' && window.getCustomThemeCSSVarsBlock) {
+    themeCss = window.getCustomThemeCSSVarsBlock() + '\n' + themeCss;
+    customValues = window.getCustomThemeValues ? window.getCustomThemeValues() : null;
+  }
+
+  const cardBg = (customValues && customValues.bg) || THEME_BG[themeName] || '#ffffff';
   const bodyBg = THEME_BODY_BG[themeName] || '#f0f0f0';
-  const accent = THEME_ACCENT[themeName] || '#5eead4';
+  const accent = (customValues && customValues.link) || THEME_ACCENT[themeName] || '#5eead4';
   const cleanHtml = stripSyncAttributes(htmlContent);
   const isNeobrutalist = themeName === 'neobrutalist';
 

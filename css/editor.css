@@ -873,6 +873,72 @@ body.focus-mode .pane {
 }
 .dc-rename-input:focus { outline: none; }
 
+/* ---------- Éditeur de thème visuel ---------- */
+.te-modal { width: min(520px, 92vw); }
+.te-reset, .te-export, .te-import {
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  color: var(--text-faint);
+  font-family: var(--font-ui);
+  font-size: 10.5px;
+  font-weight: 500;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color 0.12s, color 0.12s;
+}
+.te-reset:hover, .te-export:hover, .te-import:hover { border-color: var(--accent); color: var(--accent); }
+.te-body { padding: 14px 16px 18px; max-height: 60vh; overflow-y: auto; }
+.te-hint { font-family: var(--font-ui); font-size: 12px; color: var(--text-faint); line-height: 1.5; margin: 0 0 14px; }
+.te-presets { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+.te-presets-label { font-family: var(--font-ui); font-size: 11px; color: var(--text-faint); }
+.te-preset-btn {
+  background: var(--bg-app);
+  border: 1px solid var(--border-strong);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 11.5px;
+  font-weight: 500;
+  padding: 5px 11px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color 0.12s, color 0.12s;
+}
+.te-preset-btn:hover { border-color: var(--accent); color: var(--accent); }
+.te-fields {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+.te-field {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--text);
+}
+.te-field:hover { background: var(--bg-hover); }
+.te-color {
+  width: 30px;
+  height: 26px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+}
+.te-color::-webkit-color-swatch-wrapper { padding: 2px; }
+.te-color::-webkit-color-swatch { border: none; border-radius: 3px; }
+
+@media (max-width: 760px) {
+  .te-fields { grid-template-columns: 1fr; }
+}
+
 /* ---------- Recherche / remplacement ---------- */
 .fr-panel {
   position: absolute;

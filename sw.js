@@ -1,5 +1,5 @@
 // sw.js — cache-first pour l'app shell, pour un fonctionnement 100% hors-ligne
-const CACHE_NAME = 'md-editor-v15';
+const CACHE_NAME = 'md-editor-v20';
 
 const APP_SHELL = [
   './',
@@ -30,6 +30,16 @@ const APP_SHELL = [
   './css/themes/synthwave.css',
   './css/themes/neobrutalist.css',
   './css/themes/cyberpunk.css',
+  './css/themes/bauhaus.css',
+  './css/themes/journal.css',
+  './css/themes/aurore.css',
+  './css/themes/blueprint.css',
+  './css/themes/terracotta.css',
+  './css/themes/glacier.css',
+  './css/themes/stark.css',
+  './css/themes/targaryen.css',
+  './css/themes/lannister.css',
+  './css/themes/personnalise.css',
   './js/renderer.js',
   './js/storage.js',
   './js/idb-storage.js',
@@ -42,6 +52,7 @@ const APP_SHELL = [
   './js/app.js',
   './js/find-replace.js',
   './js/documents.js',
+  './js/theme-editor.js',
   './js/version-history.js',
   './js/vendor/markdown-it.min.js',
   './js/vendor/purify.min.js',
