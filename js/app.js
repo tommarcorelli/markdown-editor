@@ -263,6 +263,33 @@
     document.querySelectorAll('.menu.open').forEach((m) => m.classList.remove('open'));
   });
 
+  // Section "Exporter…" repliable dans le menu Fichier : le menu reste court à
+  // l'ouverture, les nombreux formats d'export ne s'affichent qu'à la demande.
+  const exportToggle = document.getElementById('export-toggle');
+  const exportGroup = document.getElementById('export-group');
+  if (exportToggle && exportGroup) {
+    const collapseExports = () => {
+      exportGroup.setAttribute('hidden', '');
+      exportToggle.setAttribute('aria-expanded', 'false');
+      exportToggle.classList.remove('is-open');
+    };
+    // Le toggle n'a pas de data-action : il ne ferme donc pas le menu.
+    exportToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const willOpen = exportGroup.hasAttribute('hidden');
+      if (willOpen) {
+        exportGroup.removeAttribute('hidden');
+        exportToggle.setAttribute('aria-expanded', 'true');
+        exportToggle.classList.add('is-open');
+      } else {
+        collapseExports();
+      }
+    });
+    // Repartir replié à chaque ouverture/fermeture du menu Fichier.
+    const fileTrigger = document.querySelector('#file-menu .menu-trigger');
+    if (fileTrigger) fileTrigger.addEventListener('click', collapseExports);
+  }
+
   const TOC_STORAGE_KEY = 'md-editor:toc';
   const NUMBERING_STORAGE_KEY = 'md-editor:numbering';
   toggleToc.checked = safeGet(TOC_STORAGE_KEY) === '1';

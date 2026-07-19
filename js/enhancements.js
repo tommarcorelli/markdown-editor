@@ -366,6 +366,10 @@ blockquote { border-left: 3px solid #888; padding-left: 12px; color: #555; font-
   const fileMenu = document.querySelector('#file-menu .menu-list');
   if (fileMenu) {
     const slidesBtn = fileMenu.querySelector('[data-action="export-slides"]');
+    // "Exporter en présentation" est désormais dans la section repliable
+    // #export-group : on insère les boutons DOCX/EPUB dans ce même conteneur
+    // (le parent réel de slidesBtn), sinon dans la liste si le repère manque.
+    const insertParent = slidesBtn ? slidesBtn.parentNode : fileMenu;
     const insertBefore = slidesBtn || null;
     const mkBtn = (label, action) => {
       const b = document.createElement('button');
@@ -378,11 +382,11 @@ blockquote { border-left: 3px solid #888; padding-left: 12px; color: #555; font-
       });
       return b;
     };
-    fileMenu.insertBefore(mkBtn('Exporter en DOCX — Style Word', 'docx-office'), insertBefore);
-    fileMenu.insertBefore(mkBtn('Exporter en DOCX — Rapport', 'docx-rapport'), insertBefore);
-    fileMenu.insertBefore(mkBtn('Exporter en DOCX — Lettre', 'docx-lettre'), insertBefore);
-    fileMenu.insertBefore(mkBtn('Exporter en DOCX — Académique', 'docx-academique'), insertBefore);
-    fileMenu.insertBefore(mkBtn('Exporter en EPUB', 'epub'), insertBefore);
+    insertParent.insertBefore(mkBtn('Exporter en DOCX — Style Word', 'docx-office'), insertBefore);
+    insertParent.insertBefore(mkBtn('Exporter en DOCX — Rapport', 'docx-rapport'), insertBefore);
+    insertParent.insertBefore(mkBtn('Exporter en DOCX — Lettre', 'docx-lettre'), insertBefore);
+    insertParent.insertBefore(mkBtn('Exporter en DOCX — Académique', 'docx-academique'), insertBefore);
+    insertParent.insertBefore(mkBtn('Exporter en EPUB', 'epub'), insertBefore);
   }
 
   // Enregistre les plugins markdown-it (footnotes)

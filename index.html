@@ -127,15 +127,18 @@
         <button id="version-history-btn"><span class="mi">🕘</span>Historique des versions</button>
         <div class="menu-sep"></div>
         <button data-action="save"><span class="mi">↓</span>Enregistrer (.md)</button>
-        <button data-action="export-html"><span class="mi">↓</span>Exporter en HTML</button>
-        <button data-action="export-pdf"><span class="mi">↓</span>Exporter en PDF (fidèle au thème)</button>
-        <button data-action="export-pdf-vector"><span class="mi">↓</span>Exporter en PDF — Rapport</button>
-        <button data-action="export-pdf-lettre"><span class="mi">↓</span>Exporter en PDF — Lettre</button>
-        <button data-action="export-pdf-academique"><span class="mi">↓</span>Exporter en PDF — Académique</button>
-        <button data-action="export-pdf-office"><span class="mi">↓</span>Exporter en PDF — Style Word</button>
-        <button data-action="print-pdf"><span class="mi">🖶</span>Imprimer (PDF navigateur)</button>
-        <div class="menu-hint">"Fidèle au thème" = image. Les autres sont vectorielles (texte sélectionnable) : "Rapport" reprend les couleurs du thème actif, "Lettre" est sobre et sans sommaire, "Académique" ajoute une page de titre et justifie le texte, "Style Word" est une mise en page administrative neutre.</div>
-        <button data-action="export-slides"><span class="mi">▤</span>Exporter en présentation</button>
+        <button type="button" id="export-toggle" class="menu-collapse" aria-expanded="false" aria-controls="export-group"><span class="mi">↧</span>Exporter…<span class="menu-chevron" aria-hidden="true">▾</span></button>
+        <div class="menu-group" id="export-group" hidden>
+          <button data-action="export-html"><span class="mi">↓</span>Exporter en HTML</button>
+          <button data-action="export-pdf"><span class="mi">↓</span>Exporter en PDF (fidèle au thème)</button>
+          <button data-action="export-pdf-vector"><span class="mi">↓</span>Exporter en PDF — Rapport</button>
+          <button data-action="export-pdf-lettre"><span class="mi">↓</span>Exporter en PDF — Lettre</button>
+          <button data-action="export-pdf-academique"><span class="mi">↓</span>Exporter en PDF — Académique</button>
+          <button data-action="export-pdf-office"><span class="mi">↓</span>Exporter en PDF — Style Word</button>
+          <button data-action="print-pdf"><span class="mi">🖶</span>Imprimer (PDF navigateur)</button>
+          <div class="menu-hint">"Fidèle au thème" = image. Les autres sont vectorielles (texte sélectionnable) : "Rapport" reprend les couleurs du thème actif, "Lettre" est sobre et sans sommaire, "Académique" ajoute une page de titre et justifie le texte, "Style Word" est une mise en page administrative neutre.</div>
+          <button data-action="export-slides"><span class="mi">▤</span>Exporter en présentation</button>
+        </div>
         <div class="menu-sep"></div>
         <button data-action="reset-all" class="menu-danger"><span class="mi">⟲</span>Réinitialiser (efface tout, historique inclus)</button>
       </div>

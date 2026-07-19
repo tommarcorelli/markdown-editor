@@ -452,7 +452,12 @@ body {
   background: var(--bg-surface-2);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius);
-  overflow: hidden;
+  /* Ne jamais dépasser l'écran : au-delà, le menu défile (sinon la fin de la
+     liste, une fois "Exporter…" déplié, passait sous le bas de la fenêtre). */
+  max-height: calc(100vh - 84px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
   min-width: 220px;
   box-shadow: var(--shadow-lg);
   z-index: 40;
@@ -533,6 +538,25 @@ body {
   line-height: 1.45;
   color: var(--text-faint);
 }
+
+/* Section repliable "Exporter…" du menu Fichier */
+.menu-collapse .menu-chevron {
+  margin-left: auto;
+  font-size: 10px;
+  color: var(--text-dim);
+  transition: transform 0.15s ease;
+}
+.menu-collapse.is-open { color: var(--accent); }
+.menu-collapse.is-open .mi,
+.menu-collapse.is-open .menu-chevron { color: var(--accent); }
+.menu-collapse.is-open .menu-chevron { transform: rotate(180deg); }
+.menu-group {
+  display: flex;
+  flex-direction: column;
+  border-left: 2px solid var(--border);
+  margin: 2px 0 2px 13px;
+}
+.menu-group[hidden] { display: none; }
 
 #options-menu .menu-list { min-width: 220px; }
 
